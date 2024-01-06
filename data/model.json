@@ -1,0 +1,114 @@
+{
+    "language": ["JAVA", "C#"],
+    "fileExtension": {
+        "JAVA": ".java",
+        "C#": ".cs"
+    },
+    "packaging": {
+        "JAVA": "package {packageName};",
+        "C#": "namespace {packageName};"
+    },
+    "imports": {
+        "JAVA": "import {type};",
+        "C#": "using {type};"
+    },
+    "fields": {
+        "JAVA": "{type} {fieldName};",
+        "C#": "{type} {fieldName} { get; set; }"
+    },
+    "typeMapping": {
+        "mysql": {
+            "int": {
+                "JAVA": "Integer",
+                "C#": "int"
+            },
+            "double": {
+                "JAVA": "Double",
+                "C#": "double"
+            },
+            "varchar": {
+                "JAVA": "String",
+                "C#": "string"
+            },
+            "date": {
+                "JAVA": "Date",
+                "C#": "DateTime"
+            },
+            "time": {
+                "JAVA": "Time",
+                "C#": "TimeSpan"
+            },
+            "datetime": {
+                "JAVA": "Timestamp",
+                "C#": "DateTime"
+            },
+            "timestamp": {
+                "JAVA": "Timestamp",
+                "C#": "DateTime"
+            },
+            "boolean": {
+                "JAVA": "Boolean",
+                "C#": "bool"
+            }
+        },
+        "postgresql": {
+            "integer": {
+                "JAVA": "Integer",
+                "C#": "int"
+            },
+            "numeric": {
+                "JAVA": "Double",
+                "C#": "double"
+            },
+            "double precision": {
+                "JAVA": "Double",
+                "C#": "double"
+            },
+            "character varying": {
+                "JAVA": "String",
+                "C#": "string"
+            },
+            "date": {
+                "JAVA": "Date",
+                "C#": "DateTime"
+            },
+            "time without time zone": {
+                "JAVA": "Time",
+                "C#": "TimeSpan"
+            },
+            "timestamp without time zone": {
+                "JAVA": "Timestamp",
+                "C#": "DateTime"
+            },
+            "boolean": {
+                "JAVA": "Boolean",
+                "C#": "bool"
+            }
+        }
+    },
+    "typeImport": {
+        "JAVA": {
+            "Integer": null,
+            "Double": null,
+            "String": null,
+            "Date": "java.sql.Date",
+            "Time": "java.sql.Time",
+            "Timestamp": "java.sql.Timestamp",
+            "Boolean": null,
+            "List": "java.util.List"
+        },
+        "C#": {
+            "int": null,
+            "double": null,
+            "string": null,
+            "DateTime": "System",
+            "TimeSpan": "System",
+            "bool": null,
+            "List": "System.Collections.Generic"
+        }
+    },
+    "getterAndSetter": {
+        "JAVA": "public {type} get{capitalFieldName}() {\n\treturn {fieldName};\n}\n\npublic void set{capitalFieldName}({type} {fieldName}) {\n\tthis.{fieldName} = {fieldName};\n}\n\n",
+        "C#": null
+    }
+}

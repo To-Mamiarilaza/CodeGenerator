@@ -1,0 +1,15 @@
+{
+    "type": ["mysql", "postgresql"],
+    "information": {
+        "mysql": {
+            "urlPrefix": "mysql+mysqlconnector",
+            "tables": "SHOW TABLES",
+            "columns": "SHOW COLUMNS FROM {tableName}"
+        },
+        "postgresql": {
+            "urlPrefix": "postgresql",
+            "tables": "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'",
+            "columns": "SELECT col.column_name, data_type, constraint_type as key FROM information_schema.columns col LEFT JOIN ( SELECT c.column_name, t.constraint_type FROM information_schema.constraint_column_usage c LEFT JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name WHERE constraint_type = 'PRIMARY KEY' AND c.table_name = '{tableName}') const ON col.column_name = const.column_name WHERE col.table_name = '{tableName}'"
+        }
+    }
+}

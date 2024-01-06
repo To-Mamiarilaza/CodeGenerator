@@ -1,0 +1,14 @@
+#package#
+
+#imports#
+public class #className# {
+    /// Field
+    #fields#
+
+    /// Constructor
+    public #className#(){}
+
+
+    /// Getter and setter
+    #gettersAndSetters#
+}
