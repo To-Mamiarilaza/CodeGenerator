@@ -4,6 +4,11 @@
  */
 package codegenerator.database;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author to
@@ -67,5 +72,9 @@ public class Column {
         this.foreignKey = foreignKey;
         this.table = table;
     }
+
+    /// methods
+
+    
     
 }

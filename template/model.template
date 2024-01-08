@@ -1,6 +1,8 @@
 #package#
 
 #imports#
+
+#classAnnotation#
 public class #className# {
     /// Field
     #fields#

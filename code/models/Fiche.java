@@ -1,20 +1,65 @@
-package test;
+package models;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
+import models.Language;
+import jakarta.persistence.*;
 
+
+@Entity
+@Table(name = "fiche")
 public class Fiche {
     /// Field
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_fiche")
     Integer idFiche;
+    
+    @Column(name = "name")
     String name;
+    
+    @Column(name = "firstname")
     String firstname;
+    
+    @Column(name = "address")
     String address;
+    
+    @Column(name = "mail")
     String mail;
+    
+    @Column(name = "description")
     String description;
+    
+    @Column(name = "photo")
     String photo;
+    
+    @Column(name = "etat")
     Integer etat;
+    
+    @Column(name = "birth_date")
     Date birthDate;
+    
+    @Column(name = "start_time")
     Time startTime;
+    
+    @Column(name = "salaire")
+    Double salaire;
+    
+    @Column(name = "admin")
+    Boolean admin;
+    
+    @Column(name = "embauche")
+    Timestamp embauche;
+    
+    @Column(name = "prix")
+    Double prix;
+    
+    @ManyToOne
+    @JoinColumn(name = "id_language")
+    @Column(name = "id_language")
+    Language language;
+    
     
     
     /// Constructor
@@ -100,6 +145,46 @@ public class Fiche {
     
     public void setStartTime(Time startTime) {
         this.startTime = startTime;
+    }
+    
+    public Double getSalaire() {
+        return salaire;
+    }
+    
+    public void setSalaire(Double salaire) {
+        this.salaire = salaire;
+    }
+    
+    public Boolean getAdmin() {
+        return admin;
+    }
+    
+    public void setAdmin(Boolean admin) {
+        this.admin = admin;
+    }
+    
+    public Timestamp getEmbauche() {
+        return embauche;
+    }
+    
+    public void setEmbauche(Timestamp embauche) {
+        this.embauche = embauche;
+    }
+    
+    public Double getPrix() {
+        return prix;
+    }
+    
+    public void setPrix(Double prix) {
+        this.prix = prix;
+    }
+    
+    public Language getLanguage() {
+        return language;
+    }
+    
+    public void setLanguage(Language language) {
+        this.language = language;
     }
     
     

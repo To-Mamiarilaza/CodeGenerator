@@ -1,5 +1,8 @@
 {
-    "language": ["JAVA", "C#"],
+    "language": [
+        "JAVA",
+        "C#"
+    ],
     "fileExtension": {
         "JAVA": ".java",
         "C#": ".cs"
@@ -13,77 +16,57 @@
         "C#": "using {type};"
     },
     "fields": {
-        "JAVA": "{type} {fieldName};",
-        "C#": "{type} {fieldName} { get; set; }"
+        "JAVA": "{fieldAnnotation}\n {type} {fieldName};",
+        "C#": "{fieldAnnotation}\n {type} {fieldName} { get; set; }"
     },
     "typeMapping": {
-        "mysql": {
-            "int": {
-                "JAVA": "Integer",
-                "C#": "int"
-            },
-            "double": {
-                "JAVA": "Double",
-                "C#": "double"
-            },
-            "varchar": {
-                "JAVA": "String",
-                "C#": "string"
-            },
-            "date": {
-                "JAVA": "Date",
-                "C#": "DateTime"
-            },
-            "time": {
-                "JAVA": "Time",
-                "C#": "TimeSpan"
-            },
-            "datetime": {
-                "JAVA": "Timestamp",
-                "C#": "DateTime"
-            },
-            "timestamp": {
-                "JAVA": "Timestamp",
-                "C#": "DateTime"
-            },
-            "boolean": {
-                "JAVA": "Boolean",
-                "C#": "bool"
-            }
+        "int4": {
+            "JAVA": "Integer",
+            "C#": "int"
         },
-        "postgresql": {
-            "integer": {
-                "JAVA": "Integer",
-                "C#": "int"
-            },
-            "numeric": {
-                "JAVA": "Double",
-                "C#": "double"
-            },
-            "double precision": {
-                "JAVA": "Double",
-                "C#": "double"
-            },
-            "character varying": {
-                "JAVA": "String",
-                "C#": "string"
-            },
-            "date": {
-                "JAVA": "Date",
-                "C#": "DateTime"
-            },
-            "time without time zone": {
-                "JAVA": "Time",
-                "C#": "TimeSpan"
-            },
-            "timestamp without time zone": {
-                "JAVA": "Timestamp",
-                "C#": "DateTime"
-            },
-            "boolean": {
-                "JAVA": "Boolean",
-                "C#": "bool"
-            }
+        "int": {
+            "JAVA": "Integer",
+            "C#": "int"
+        },
+        "double": {
+            "JAVA": "Double",
+            "C#": "double"
+        },
+        "float8": {
+            "JAVA": "Double",
+            "C#": "double"
+        },
+        "numeric": {
+            "JAVA": "Double",
+            "C#": "double"
+        },
+        "varchar": {
+            "JAVA": "String",
+            "C#": "string"
+        },
+        "date": {
+            "JAVA": "Date",
+            "C#": "DateTime"
+        },
+        "time": {
+            "JAVA": "Time",
+            "C#": "TimeSpan"
+        },
+        "datetime": {
+            "JAVA": "Timestamp",
+            "C#": "DateTime"
+        },
+        "timestamp": {
+            "JAVA": "Timestamp",
+            "C#": "DateTime"
+        },
+        "boolean": {
+            "JAVA": "Boolean",
+            "C#": "bool"
+        },
+        "bool": {
+            "JAVA": "Boolean",
+            "C#": "bool"
         }
     },
     "typeImport": {
@@ -110,5 +93,36 @@
     "getterAndSetter": {
         "JAVA": "public {type} get{capitalFieldName}() {\n\treturn {fieldName};\n}\n\npublic void set{capitalFieldName}({type} {fieldName}) {\n\tthis.{fieldName} = {fieldName};\n}\n\n",
         "C#": null
+    },
+    "DAOCompatibility": {
+        "JAVA": ["JPA", "MyDAO"],
+        "C#": ["Entity"]
+    },
+    "DAOImports": {
+        "JPA": ["jakarta.persistence.*"],
+        "Entity": ["System.ComponentModel.DataAnnotations", "System.ComponentModel.DataAnnotations.Schema"],
+        "MyDAO": ["generalisation.annotations.DBTable", "generalisation.annotations.DBField"]
+    },
+    "DAOAnnotations": {
+        "class": {
+            "JPA": "@Entity\n@Table(name = \"{tableName}\")",
+            "Entity": "[Table(\"{tableName}\")]",
+            "MyDAO": "@DBTable(name = \"{tableName}\", isAutoIncrement = true)"
+        },
+        "field": {
+            "JPA": "{PKAnnotation}\n{FKAnnotation}\n@Column(name = \"{columnName}\")",
+            "Entity": "{PKAnnotation}\n{FKAnnotation}\n[Column(\"{columnName}\")]",
+            "MyDAO": "@DBField(name = \"{columnName}\" {PKAnnotation} {FKAnnotation})"
+        }
+    },
+    "PKAnnotations": {
+        "JPA": "@Id\n@GeneratedValue(strategy = GenerationType.IDENTITY)",
+        "Entity": "[Key]\n[DatabaseGenerated(DatabaseGeneratedOption.Identity)]",
+        "MyDAO": ", isPrimaryKey = true"
+    },
+    "FKAnnotations": {
+        "JPA": "@ManyToOne\n@JoinColumn(name = \"{fkColumnName}\")",
+        "Entity": "[ForeignKey(\"{fkColumnName}\")]",
+        "MyDAO": ", isForeignKey = true"
     }
 }

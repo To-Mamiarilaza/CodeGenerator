@@ -40,4 +40,26 @@ public class CodeFormatter {
         }
         code.append(line).append("\n");
     }
+
+    public static String removeContainingLine(String target, String content) {
+        String[] lines = content.split("\n");
+        StringBuilder newContent = new StringBuilder();
+
+        String[] targetSplit = target.split("\n");
+        for (String line : lines) {
+            boolean append = true;
+
+            for (String element : targetSplit) {
+                if (line.contains(element)) {
+                    append = false;
+                }
+            }
+            
+            if (append) {
+                newContent.append(line + "\n");
+            }
+        }
+
+        return newContent.toString();
+    }
 }

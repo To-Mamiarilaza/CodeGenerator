@@ -42,10 +42,31 @@ public class FileUtil {
                 writer.write(content);
             }
 
-            System.out.println("Le fichier a été créé avec succès : " + filePath);
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Erreur lors de la création du fichier.");
         }
+    }
+
+    // remove a directory
+    public static void removeDirectory(File dossier) {
+        if (!dossier.exists()) {
+            return;
+        }
+
+        if (dossier.isDirectory()) {
+            // Liste tous les fichiers et sous-dossiers du dossier
+            File[] fichiers = dossier.listFiles();
+
+            if (fichiers != null) {
+                for (File fichier : fichiers) {
+                    // Appel récursif pour supprimer les fichiers/dossiers internes
+                    removeDirectory(fichier);
+                }
+            }
+        }
+
+        // Supprime le dossier une fois que son contenu a été supprimé
+        dossier.delete();
     }
 }

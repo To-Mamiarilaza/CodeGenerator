@@ -24,6 +24,8 @@ public class Model {
     String DAO;
     String packageName;
     String outputPath;
+
+    String templateContent;
     
     /// Getter and setter
 
@@ -66,6 +68,14 @@ public class Model {
     public void setOutputPath(String outputPath) {
         this.outputPath = outputPath;
     }
+
+    public String getTemplateContent() {
+        return templateContent;
+    }
+
+    public void setTemplateContent(String templateContent) {
+        this.templateContent = templateContent;
+    }
     
     /// Constructor
 
@@ -91,10 +101,18 @@ public class Model {
         }
         
         for (Column column : getTable().getColumns()) {
-            String type = getModelData().get("typeMapping").getAsJsonObject().get(getTable().getDatabaseInformation().getType()).getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
+            String type = getModelData().get("typeMapping").getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
+            String fieldName = WordFormatter.toCamelCase(column.getName());
+
+            // Foreign key managing
+            if (column.getForeignKey() != null) {
+                type = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+                fieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            }
+            
             gettersAndSetters += declaration.replace("{type}", type)
-                    .replace("{fieldName}", WordFormatter.toCamelCase(column.getName()))
-                    .replace("{capitalFieldName}", WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getName())));
+                    .replace("{fieldName}", fieldName)
+                    .replace("{capitalFieldName}", WordFormatter.capitalizeFirstLetter(fieldName));
         }
         
         return gettersAndSetters;
@@ -105,8 +123,54 @@ public class Model {
         String fieldsDeclaration = getModelData().get("fields").getAsJsonObject().get(getLanguage()).getAsString();
         
         for (Column column : getTable().getColumns()) {
-            String type = getModelData().get("typeMapping").getAsJsonObject().get(getTable().getDatabaseInformation().getType()).getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
-            fields += fieldsDeclaration.replace("{type}", type).replace("{fieldName}", WordFormatter.toCamelCase(column.getName())) + "\n\t";
+            String customFieldsDeclaration = fieldsDeclaration;
+
+            String type = getModelData().get("typeMapping").getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
+            String fieldName = WordFormatter.toCamelCase(column.getName());
+
+            if (column.getForeignKey() != null) {
+                type = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+                fieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            }
+
+            // managing field annotation
+            JsonElement fieldAnnotationElement = getModelData().get("DAOAnnotations").getAsJsonObject().get("field").getAsJsonObject().get(getDAO());
+            if (fieldAnnotationElement == null) {
+                customFieldsDeclaration = customFieldsDeclaration.replace("{fieldAnnotation}\n ", "");
+            } else {
+                customFieldsDeclaration = customFieldsDeclaration.replace("{fieldAnnotation}", fieldAnnotationElement.getAsString());
+                customFieldsDeclaration = customFieldsDeclaration.replace("{columnName}", column.getName());
+
+                // Managing primary key
+                if (column.getIsPrimaryKey()) {
+                    String primaryKeyAnnotation = getModelData().get("PKAnnotations").getAsJsonObject().get(getDAO()).getAsString();
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{PKAnnotation}", primaryKeyAnnotation);
+
+                } else {
+                    // for single annotation
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{PKAnnotation}\n", "");
+                    // for integrated annotation
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{PKAnnotation}", "");
+                }
+
+                // Managing foreign key
+                if (column.getForeignKey() != null) {
+                    String foreignKeyAnnotation = getModelData().get("FKAnnotations").getAsJsonObject().get(getDAO()).getAsString();
+                    foreignKeyAnnotation = foreignKeyAnnotation.replace("{fkColumnName}", column.getForeignKey().getColumnName());
+
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{FKAnnotation}", foreignKeyAnnotation);
+                } else {
+                    // for single annotation
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{FKAnnotation}\n", "");
+                    // for integrated annotation
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{FKAnnotation}", "");
+                }
+
+                // add an espacement for structuring
+                customFieldsDeclaration = customFieldsDeclaration + "\n";
+            }
+
+            fields += customFieldsDeclaration.replace("{type}", type).replace("{fieldName}", fieldName) + "\n\t";
         }
         
         return fields;
@@ -125,13 +189,27 @@ public class Model {
         String imports = "";
         for (Column column : getTable().getColumns()) {
             String importDeclaration = getModelData().get("imports").getAsJsonObject().get(getLanguage()).getAsString();
-            String type = getModelData().get("typeMapping").getAsJsonObject().get(getTable().getDatabaseInformation().getType()).getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
+            String type = getModelData().get("typeMapping").getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
             JsonElement typeImport = getModelData().get("typeImport").getAsJsonObject().get(getLanguage()).getAsJsonObject().get(type);
             
-            if (!typeImport.isJsonNull()) {
+            if (column.getForeignKey() != null) {
+                String classType = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+                imports += "#import-" + classType + "#\n";
+            }
+            else if (!typeImport.isJsonNull() && !imports.contains(typeImport.getAsString())) {
                 imports += importDeclaration.replace("{type}", typeImport.getAsString()) + "\n";
             }
         }
+
+        // managing dao imports
+        JsonElement DAOImportsElement = getModelData().get("DAOImports").getAsJsonObject().get(getDAO());
+        if (DAOImportsElement != null) {
+            String importDeclaration = getModelData().get("imports").getAsJsonObject().get(getLanguage()).getAsString();
+            for (JsonElement DAOImport : DAOImportsElement.getAsJsonArray()) {
+                imports += importDeclaration.replace("{type}", DAOImport.getAsString()) + "\n";
+            }
+        }
+
         return imports;
     }
     
@@ -139,8 +217,17 @@ public class Model {
         String packageDeclaration = getModelData().get("packaging").getAsJsonObject().get(this.getLanguage()).getAsString();
         return packageDeclaration.replace("{packageName}", this.getPackageName());
     }
+
+    public String getClassAnnotation() throws Exception {
+        JsonElement classAnnotationElement = getModelData().get("DAOAnnotations").getAsJsonObject().get("class").getAsJsonObject().get(getDAO());
+        if (classAnnotationElement == null) {
+            return null;
+        } else {
+            return classAnnotationElement.getAsString().replace("{tableName}", getTable().getName());
+        }
+    }
     
-    public void generate() throws Exception {
+    public void loadTemplate() throws Exception {
         // get the template content
         String templateContent = FileUtil.toString("./template/model.template");
         
@@ -148,9 +235,9 @@ public class Model {
         String packageDeclaration = getPackageDeclaration();
         String importsDeclaration = getImportsDeclaration();
         String className = getClassName();
-        String fileName = getFileName();
         String fieldsDeclaration = getFieldsDeclaration();
         String gettersAndSetters = getGetterAndSetter();
+        String classAnnotation = getClassAnnotation();
         
         // replace template content
         templateContent = templateContent.replace("#package#", packageDeclaration);
@@ -159,16 +246,22 @@ public class Model {
         templateContent = templateContent.replace("#fields#", fieldsDeclaration);        
         templateContent = templateContent.replace("#gettersAndSetters#", gettersAndSetters);
 
+        // if section may be empty
+        templateContent = classAnnotation != null ? templateContent.replace("#classAnnotation#", classAnnotation) : CodeFormatter.removeContainingLine("#classAnnotation#", templateContent);
+
         // Formatter le code
         templateContent = CodeFormatter.formatCode(templateContent);
 
-        // generate file to the outputPath
-        System.out.println(templateContent);
-        String packagePath = getPackageName().replace(".", "/");
-        FileUtil.createFileWithContent(templateContent, getOutputPath() + packagePath, fileName);
+        setTemplateContent(templateContent);
     }
     
-    public JsonObject getModelData() throws Exception {
+    // generate file to the outputPath
+    public void generate() throws Exception {
+        String packagePath = getPackageName().replace(".", "/");
+        FileUtil.createFileWithContent(getTemplateContent(), getOutputPath() + packagePath, getFileName());
+    }
+
+    public static JsonObject getModelData() throws Exception {
         return JsonUtil.toJsonObject("./data/model.json");
     }
 }

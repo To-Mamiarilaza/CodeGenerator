@@ -1,0 +1,21 @@
+{
+    "outputPath": "./code",
+    "database": {
+        "type": "postgresql",
+        "database": "fiche_employe",
+        "host": "localhost",
+        "username": "postgres",
+        "password": "postgres"
+    },
+    "language": "JAVA",
+    "model": {
+        "DAO": "JPA",
+        "tables": [{"name": "*", "package": "models"}]
+    },
+    "controller": {
+
+    },
+    "view": {
+        
+    }
+}

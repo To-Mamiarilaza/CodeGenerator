@@ -22,6 +22,7 @@ public class Table {
     List<Column> columns;
     DatabaseInformation databaseInformation;
     
+    
     /// Getter and Setter
 
     public String getName() {
@@ -56,36 +57,121 @@ public class Table {
     }
     
     /// Methods
-    
-    public void loadColumns(Connection connection) throws Exception {
-        List<Column> columnList = new ArrayList<>();
-       
-        String query = getDatabaseInformation().getDatabaseData().get("information").getAsJsonObject().get(getDatabaseInformation().getType()).getAsJsonObject().get("columns").getAsString();
-        query = query.replace("{tableName}", this.getName());
-        
-        Statement statement = null;
+
+    // find column with the given name
+    public Column getColumnWithName(String name) {
+        for (Column column : columns) {
+            if (column.getName().equals(name)) {
+                return column;
+            }
+        }
+
+        return null;
+    }
+
+    // find and set all foreign keys
+    public void setAllForeignKeys(Connection connection) throws Exception {
         ResultSet resultSet = null;
         
         try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(query);
-            
+            String catalog = null;
+            String schemaPattern = "public"; // Nom du schéma
+            String tableNamePattern = getName(); // Nom de la table
+
+            resultSet = connection.getMetaData().getImportedKeys(catalog, schemaPattern, tableNamePattern);
+
             while (resultSet.next()) {    
-                String columnName = resultSet.getString(1);
-                String type = resultSet.getString(2);
-                Boolean isPrimaryKey = resultSet.getString(3) != null;
-                
-                columnList.add(new Column(columnName, type, isPrimaryKey, null, this));
+                String referenceTableName = resultSet.getString("PKTABLE_NAME");
+                String referenceColumnName = resultSet.getString("PKCOLUMN_NAME");
+
+                Column targetColumn = getColumnWithName(resultSet.getString("FKCOLUMN_NAME"));
+                targetColumn.setForeignKey(new ForeignKey(referenceTableName, referenceColumnName));
             }
-            setColumns(columnList);
+            
         } catch (Exception e) {
             throw e;
         } finally {
             if (resultSet != null) {
                 resultSet.close();
             }
-            if (statement != null) {
-                statement.close();
+        }
+    }
+
+    // find all foreign key column
+    public List<Column> getForeignKeyColumns() {
+        List<Column> fkColumns = new ArrayList<>();
+        for (Column column : getColumns()) {
+            if (column.getForeignKey() != null) {
+                fkColumns.add(column);
+            }
+        }
+
+        return fkColumns;
+    }
+
+    // find and set the primary key
+    public void setPrimaryKey(Connection connection) throws Exception {
+        ResultSet resultSet = null;
+        
+        try {
+            String catalog = null;
+            String schemaPattern = "public"; // Nom du schéma
+            String tableNamePattern = getName(); // Nom de la table
+
+            resultSet = connection.getMetaData().getPrimaryKeys(catalog, schemaPattern, tableNamePattern);
+
+            while (resultSet.next()) {    
+                String columnName = resultSet.getString("COLUMN_NAME");
+
+                Column targetColumn = getColumnWithName(columnName);
+                if (targetColumn != null) {
+                    targetColumn.setIsPrimaryKey(true);
+                }
+            }
+            
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+    }
+    
+    public void loadColumns(Connection connection) throws Exception {
+        List<Column> columnList = new ArrayList<>();
+       
+
+        ResultSet resultSet = null;
+        
+        try {
+            String catalog = null;
+            String schemaPattern = "public"; // Nom du schéma
+            String tableNamePattern = getName(); // Nom de la table
+            String columnNamePattern = null;
+
+            resultSet = connection.getMetaData().getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+
+            while (resultSet.next()) {    
+                String columnName = resultSet.getString("COLUMN_NAME");
+                String type = resultSet.getString("TYPE_NAME");
+
+                Column newColumn = new Column(columnName, type, false, null, this);
+                columnList.add(newColumn);
+            }
+            setColumns(columnList);
+
+            // find the primary key
+            setPrimaryKey(connection);
+            
+            // set all foreign keys
+            setAllForeignKeys(connection);
+            
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
             }
         }
     }

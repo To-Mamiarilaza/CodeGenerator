@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -88,6 +89,17 @@ public class DatabaseInformation {
     }
 
     /// methods
+
+    // find the table with the given name
+    public Table getTableWithName(String tableName) {
+        for (Table table : tables) {
+            if (table.getName().equals(tableName)) {
+                return table;
+            }
+        }
+
+        return null;
+    }
     
     // load all tables from database
     public void fetchInformations() throws Exception {
@@ -98,20 +110,23 @@ public class DatabaseInformation {
     
     public void loadTables() throws Exception {
         List<Table> tableList = new ArrayList<>();
-        String query = getDatabaseData().get("information").getAsJsonObject().get(this.type).getAsJsonObject().get("tables").getAsString();
-        
+
         Connection connection = null;
-        Statement statement = null;
         ResultSet resultSet = null;
         
         try {
             connection = getConnection();
+            DatabaseMetaData metaData = connection.getMetaData();
 
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(query);
+            String catalog = null;
+            String schemaPattern = "public";
+            String tableNamePattern = null;
+            String[] types = {"TABLE"};
+
+            resultSet = metaData.getTables(catalog, schemaPattern, tableNamePattern, types);
             
             while (resultSet.next()) {   
-                Table table = new Table(resultSet.getString("table_name"), this);
+                Table table = new Table(resultSet.getString("TABLE_NAME"), this);
                 table.loadColumns(connection);
                 tableList.add(table);
             }
@@ -123,23 +138,25 @@ public class DatabaseInformation {
             if (resultSet != null) {
                 resultSet.close();
             }
-            if (statement != null) {
-                statement.close();
-            }
             if (connection != null) {
                 connection.close();
             }
         }
     }
     
-    public JsonObject getDatabaseData() throws Exception {
+    public static JsonObject getDatabaseData() throws Exception {
         return JsonUtil.toJsonObject("./data/database.json");
     }
-    
+
     public Connection getConnection() throws Exception {
         String urlPrefix = getDatabaseData().get("information").getAsJsonObject().get(this.type).getAsJsonObject().get("urlPrefix").getAsString();
         Connection connection = DriverManager.getConnection("jdbc:" + urlPrefix + "://localhost:5432/" + this.getName(), this.getUser(), this.getPassword());
         return connection;
+    }
+
+    public static void main(String[] args) throws Exception {
+        DatabaseInformation databaseInformation = new DatabaseInformation("fiche_employe", "localhost", "postgres", "postgres", "postgresql");
+        databaseInformation.fetchInformations();
     }
 
 }
