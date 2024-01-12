@@ -8,12 +8,15 @@
         "password": "postgres"
     },
     "language": "JAVA",
+    "framework": "spring",
     "model": {
         "DAO": "JPA",
         "tables": [{"name": "*", "package": "models"}]
     },
     "controller": {
-
+        "type": "REST",
+        "DAO": "JPA",
+        "tables": [{"name": "*", "package": "controllers", "requestMapping": "DEFAULT"}]
     },
     "view": {
         

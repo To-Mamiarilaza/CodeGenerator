@@ -1,0 +1,287 @@
+{
+    "frameworkCompatibility": {
+        "JAVA": "spring, ituFramework",
+        "C#": ".net"
+    },
+    "controllerImports": {
+        "spring": {
+            "REST": [
+                "org.springframework.beans.factory.annotation.Autowired",
+                "org.springframework.http.ResponseEntity",
+                "org.springframework.web.bind.annotation.*",
+                "java.util.List"
+            ],
+            "MVC": null
+        },
+        ".net": {
+            "REST": [
+                "using Microsoft.AspNetCore.Mvc",
+                "using Microsoft.EntityFrameworkCore"
+            ],
+            "MVC": null
+        }
+    },
+    "classAnnotation": {
+        "spring": {
+            "REST": "@RestController\n@RequestMapping(\"{requestMapping}\")",
+            "MVC": null
+        },
+        ".net": {
+            "REST": "[ApiController]\n[Route(\"{requestMapping}\")]",
+            "MVC": null
+        }
+    },
+    "extendsRequirement": {
+        "spring": {
+            "REST": null,
+            "MVC": null
+        },
+        ".net": {
+            "REST": "ControllerBase",
+            "MVC": null
+        }
+    },
+    "dbServiceAnnotation": {
+        "spring": {
+            "REST": "@Autowired",
+            "MVC": null
+        },
+        ".net": {
+            "REST": null,
+            "MVC": null
+        }
+    },
+    "dbServiceDeclaration": {
+        "spring": {
+            "REST": "private {dbServiceType} {dbServiceName};",
+            "MVC": null
+        },
+        ".net": {
+            "REST": "private readonly {dbServiceType} {dbServiceName};",
+            "MVC": null
+        }
+    },
+    "constructor": {
+        "spring": {
+            "REST": null,
+            "MVC": null
+        },
+        ".net": {
+            "REST": "public {controllerName}({dbServiceType} {dbServiceName}) {\n{dbServiceName} = {dbServiceName};\n}",
+            "MVC": null
+        }
+    },
+    "CRUDMethods": {
+        "getAll": {
+            "annotation": {
+                "spring": {
+                    "REST": "@GetMapping",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "[HttpGet]",
+                    "MVC": null
+                }
+            },
+            "returnType": {
+                "spring": {
+                    "REST": "List<{type}>",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "async Task<ActionResult<IEnumerable<{type}>>>",
+                    "MVC": null
+                }
+            },
+            "declaration": {
+                "spring": {
+                    "REST": "getAll{type}s()",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "GetAll{type}s()",
+                    "MVC": null
+                }
+            },
+            "content": {
+                "spring": {
+                    "REST": "",
+                    "MVC": ""
+                },
+                ".net": {
+                    "REST": "",
+                    "MVC":""
+                }
+            }
+        },
+        "getById": {
+            "annotation": {
+                "spring": {
+                    "REST": "@GetMapping(\"/{id}\")",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "[HttpGet(\"{id}\")]",
+                    "MVC": null
+                }
+            },
+            "returnType": {
+                "spring": {
+                    "REST": "ResponseEntity<{type}>",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "async Task<ActionResult<{type}>>",
+                    "MVC": null
+                }
+            },
+            "declaration": {
+                "spring": {
+                    "REST": "get{type}ById(@PathVariable {pkFieldType} {pkFieldName})",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "Get{type}ById({pkFieldType} {pkFieldName})",
+                    "MVC": null
+                }
+            },
+            "content": {
+                "spring": {
+                    "REST": "",
+                    "MVC": ""
+                },
+                ".net": {
+                    "REST": "",
+                    "MVC":""
+                }
+            }
+        },
+        "create": {
+            "annotation": {
+                "spring": {
+                    "REST": "@PostMapping",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "[HttpPost]",
+                    "MVC": null
+                }
+            },
+            "returnType": {
+                "spring": {
+                    "REST": "ResponseEntity<{type}>",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "async Task<ActionResult<{type}>>",
+                    "MVC": null
+                }
+            },
+            "declaration": {
+                "spring": {
+                    "REST": "create{type}(@RequestBody {type} {parameterName})",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "Create{type}({type} {parameterName})",
+                    "MVC": null
+                }
+            },
+            "content": {
+                "spring": {
+                    "REST": "",
+                    "MVC": ""
+                },
+                ".net": {
+                    "REST": "",
+                    "MVC":""
+                }
+            }
+        },
+        "update": {
+            "annotation": {
+                "spring": {
+                    "REST": "@PutMapping(\"/{id}\")",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "[HttpPut(\"{id}\")]",
+                    "MVC": null
+                }
+            },
+            "returnType": {
+                "spring": {
+                    "REST": "ResponseEntity<{type}>",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "async Task<IActionResult>",
+                    "MVC": null
+                }
+            },
+            "declaration": {
+                "spring": {
+                    "REST": "update{type}(@PathVariable {pkFieldType} {pkFieldName}, @RequestBody {type} {parameterName})",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "Update{type}({pkFieldType} {pkFieldName}, {type} {parameterName})",
+                    "MVC": null
+                }
+            },
+            "content": {
+                "spring": {
+                    "REST": "",
+                    "MVC": ""
+                },
+                ".net": {
+                    "REST": "",
+                    "MVC":""
+                }
+            }
+        },
+        "delete": {
+            "annotation": {
+                "spring": {
+                    "REST": "@DeleteMapping(\"/{id}\")",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "[HttpDelete(\"{id}\")]",
+                    "MVC": null
+                }
+            },
+            "returnType": {
+                "spring": {
+                    "REST": "ResponseEntity<Void>",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "async Task<IActionResult>",
+                    "MVC": null
+                }
+            },
+            "declaration": {
+                "spring": {
+                    "REST": "delete{type}(@PathVariable {pkFieldType} {pkFieldName})",
+                    "MVC": null
+                },
+                ".net": {
+                    "REST": "Delete{type}({pkFieldType} {pkFieldName})",
+                    "MVC": null
+                }
+            },
+            "content": {
+                "spring": {
+                    "REST": "",
+                    "MVC": ""
+                },
+                ".net": {
+                    "REST": "",
+                    "MVC":""
+                }
+            }
+        }
+    }
+    
+}

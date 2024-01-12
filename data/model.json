@@ -15,6 +15,10 @@
         "JAVA": "import {type};",
         "C#": "using {type};"
     },
+    "extends": {
+        "JAVA": "extends {type}",
+        "C#": ": {type}"
+    },
     "fields": {
         "JAVA": "{fieldAnnotation}\n {type} {fieldName};",
         "C#": "{fieldAnnotation}\n {type} {fieldName} { get; set; }"

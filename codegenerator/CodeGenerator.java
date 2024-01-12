@@ -13,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 
+import codegenerator.controller.Controller;
 import codegenerator.database.*;
 import codegenerator.model.*;
 import codegenerator.util.CLIUtil;
@@ -215,6 +216,13 @@ public class CodeGenerator {
         if (action.equals("model")) {
             System.out.println("GENERATION CODE MODEL");
             generateModel(config.get("language").getAsString(), outputPath, config.get("model").getAsJsonObject());
+
+            // Test the controller
+            Model targetModel = getModelWithName("fiche");
+            Controller controller = new Controller(targetModel, "C#", ".net", "REST", "Entity", "controllers", "fiches", outputPath);
+            controller.loadTemplate();
+            controller.generate();
+
         } else if (action.equals("controller")) {
             System.out.println("GENERATION CODE CONTROLLER");
 

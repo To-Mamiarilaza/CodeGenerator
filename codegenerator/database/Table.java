@@ -109,6 +109,16 @@ public class Table {
         return fkColumns;
     }
 
+    // get the primary key column
+    public Column getPrimaryKeyColumn() {
+        for (Column column : columns) {
+            if (column.isPrimaryKey) {
+                return column;
+            }
+        }
+        return null;    
+    }
+
     // find and set the primary key
     public void setPrimaryKey(Connection connection) throws Exception {
         ResultSet resultSet = null;

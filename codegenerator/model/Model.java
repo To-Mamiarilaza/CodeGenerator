@@ -88,6 +88,21 @@ public class Model {
     }
     
     /// Method
+
+    public String getPrimaryKeyFieldType() throws Exception {
+        Column column = getTable().getPrimaryKeyColumn();
+        if (column == null) return null;
+            
+        String type = getModelData().get("typeMapping").getAsJsonObject().get(column.getType()).getAsJsonObject().get(getLanguage()).getAsString();
+        return type;
+    }
+
+    public String getPrimaryKeyFieldName() throws Exception {
+        Column column = getTable().getPrimaryKeyColumn();
+        if (column == null) return null;
+
+        return WordFormatter.toCamelCase(column.getName());
+    }
     
     public String getGetterAndSetter() throws Exception {
         String gettersAndSetters = "";

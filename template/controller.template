@@ -1,0 +1,38 @@
+#package#
+
+#imports#
+
+#classAnnotation#
+public class #className# #extends# {
+
+    #dbServiceAnnotation#
+    #dbServiceDeclaration#
+
+    #constructor#
+
+    #getAllAnnotation#
+    public #getAllReturnType# #getAllDeclaration# {
+        #getAllContent#
+    }
+
+    #getByIdAnnotation#
+    public #getByIdReturnType# #getByIdDeclaration# {
+        #getByIdContent#
+    }
+
+    #createAnnotation#
+    public #createReturnType# #createDeclaration# {
+        #createContent#
+    }
+
+    #updateAnnotation#
+    public #updateReturnType# #updateDeclaration# {
+        #updateContent#
+    }
+
+    #deleteAnnotation#
+    public #deleteReturnType# #deleteDeclaration# {
+        #deleteContent#
+    }
+
+}
