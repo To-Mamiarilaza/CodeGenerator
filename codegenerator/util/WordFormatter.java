@@ -49,5 +49,21 @@ public class WordFormatter {
         
         return path;
     }
+
+    public static String toSpacedUpperCase(String name) {
+        if (name == null || name.isEmpty()) {
+            return name;
+        }
+        StringBuilder camelCase = new StringBuilder();
+        String[] words = name.split("[_\\s]");
+        for (int i = 0; i < words.length; i++) {
+            if (!words[i].isEmpty()) {
+                camelCase.append(words[i].substring(0, 1).toUpperCase());
+                camelCase.append(words[i].substring(1).toLowerCase());
+                camelCase.append(" ");
+            }
+        }
+        return camelCase.toString();
+    }
     
 }

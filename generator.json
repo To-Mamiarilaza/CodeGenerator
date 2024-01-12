@@ -2,10 +2,10 @@
     "outputPath": "./code",
     "database": {
         "type": "postgresql",
-        "database": "fiche_employe",
+        "database": "stock",
         "host": "localhost",
         "username": "postgres",
-        "password": "postgres"
+        "password": "doda"
     },
     "language": "JAVA",
     "framework": "spring",
@@ -19,6 +19,6 @@
         "tables": [{"name": "*", "package": "controllers", "requestMapping": "DEFAULT"}]
     },
     "view": {
-        
+        "choice": "razor"        
     }
 }

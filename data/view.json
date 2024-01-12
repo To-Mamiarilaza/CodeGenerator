@@ -1,0 +1,43 @@
+{
+  "page": {
+    "fileExtension": {
+      "mine": ".jsp",
+      "thymeleaf": ".html",
+      "razor": ".cshtml"
+    },
+    "pageRequirement": {
+      "mine": "<%a taglib uri=\"http://java.sun.com/jstl/core\" prefix=\"c\" %>",
+      "thymeleaf": "",
+      "razor": "@model List<{className}>"
+    },
+    "htmlRequirement": {
+      "mine": "",
+      "thymeleaf": "xmlns:th=\"http://www.thymeleaf.org\"",
+      "razor": ""
+    },
+    "tableLooping": {
+      "tr": {
+        "mine": "\n\t\t\t\t<c:forEach var=\"{variableName}\" items=\"${{dataName}}\">\n\t\t\t\t\t<tr>{td}\n\t\t\t\t\t</tr>\n\t\t\t\t</c:forEach>",
+        "thymeleaf": "\n\t\t\t\t<tr th:each=\"{variableName} : ${{dataName}}\">{td}\n\t\t\t\t</tr>",
+        "razor": "\n\t\t\t\t@foreach (var {variableName} in Model)\n\t\t\t\t{\n\t\t\t\t\t<tr>{td}\n\t\t\t\t\t</tr>\n\t\t\t\t}"
+      },
+      "td": {
+        "mine": "\n\t\t\t\t\t\t<td>${{variableName}.{fieldNameNotCapitalize}}</td>",
+        "thymeleaf": "\n\t\t\t\t\t<td th:text=\"${{variableName}.{fieldNameNotCapitalize}}\"></td>",
+        "razor": "\n\t\t\t\t\t\t<td>@{variableName}.{fieldNameCapitalize}</td>"
+      }
+    }
+  },
+  "inputMapping": {
+    "int4": "number",
+    "int": "number",
+    "double": "text",
+    "float8": "text",
+    "numeric": "text",
+    "varchar": "text",
+    "date": "date",
+    "time": "time",
+    "datetime": "datetime-local",
+    "timestamp": "date-time-local"
+  }
+}

@@ -19,7 +19,8 @@ import codegenerator.model.*;
 import codegenerator.util.CLIUtil;
 import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
-import codegenerator.util.JsonUtil;;
+import codegenerator.util.JsonUtil;
+import codegenerator.view.View;;
 
 /**
  *
@@ -228,7 +229,11 @@ public class CodeGenerator {
 
         } else if (action.equals("view")) {
             System.out.println("GENERATION CODE VIEW");
-
+            JsonObject data = JsonUtil.toJsonObject("./data/view.json");
+            for (Table t : getDatabaseInformation().getTables()) {
+                View view = new View(t, config.get("view").getAsJsonObject().get("choice").getAsString(), outputPath, data);
+                view.generate();
+            }
         } else {
             throw new Exception("L' action que vous mentionner n' est pas correct !");
         }
@@ -245,7 +250,6 @@ public class CodeGenerator {
             throw new Exception(
                     "Vous devez mentionner les arguments suivant : \n1. Path du fichier de configuration\n2. Action a effectuer");
         }
-
         codeGenerator.init(args[0], args[1]);
     }
 
