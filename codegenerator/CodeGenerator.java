@@ -214,6 +214,7 @@ public class CodeGenerator {
         String outputPath = config.get("outputPath").getAsString();
         FileUtil.removeDirectory(new File(outputPath));
 
+
         if (action.equals("model")) {
             System.out.println("GENERATION CODE MODEL");
             generateModel(config.get("language").getAsString(), outputPath, config.get("model").getAsJsonObject());

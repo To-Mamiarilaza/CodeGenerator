@@ -38,6 +38,7 @@
     "date": "date",
     "time": "time",
     "datetime": "datetime-local",
-    "timestamp": "date-time-local"
+    "timestamp": "date-time-local",
+    "bool": "boolean"
   }
 }

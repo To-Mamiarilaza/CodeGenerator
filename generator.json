@@ -2,21 +2,21 @@
     "outputPath": "./code",
     "database": {
         "type": "postgresql",
-        "database": "stock",
+        "database": "fiche_employe",
         "host": "localhost",
         "username": "postgres",
-        "password": "doda"
+        "password": "postgres"
     },
     "language": "JAVA",
     "framework": "spring",
     "model": {
         "DAO": "JPA",
-        "tables": [{"name": "*", "package": "models"}]
+        "tables": [{"name": "tutorials", "package": "models"}]
     },
     "controller": {
         "type": "REST",
         "DAO": "JPA",
-        "tables": [{"name": "*", "package": "controllers", "requestMapping": "DEFAULT"}]
+        "tables": [{"name": "tutorials", "package": "controllers", "requestMapping": "DEFAULT"}]
     },
     "view": {
         "choice": "razor"        
