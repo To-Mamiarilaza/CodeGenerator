@@ -8,15 +8,15 @@
         "password": "postgres"
     },
     "language": "JAVA",
+    "DAO": "JPA",
     "framework": "spring",
     "model": {
-        "DAO": "JPA",
-        "tables": [{"name": "*", "package": "models"}]
+        "tables": [{"name": "tutorials", "package": "com.bezkoder.spring.thymeleaf.entity"}]
     },
     "controller": {
-        "type": "REST",
-        "DAO": "JPA",
-        "tables": [{"name": "*", "package": "controllers", "requestMapping": "DEFAULT"}]
+        "type": "MVC",
+        "dbServicePackage": "com.bezkoder.spring.thymeleaf.repository",
+        "tables": [{"name": "tutorials", "package": "com.bezkoder.spring.thymeleaf.controller", "requestMapping": "DEFAULT"}]
     },
     "view": {
         

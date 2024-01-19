@@ -21,10 +21,18 @@
     },
     "fields": {
         "JAVA": "{fieldAnnotation}\n {type} {fieldName};",
-        "C#": "{fieldAnnotation}\n {type} {fieldName} { get; set; }"
+        "C#": "{fieldAnnotation}\n public {type} {fieldName} { get; set; }"
+    },
+    "importMethod": {
+        "JAVA": "WITH TYPE",
+        "C#": "WITHOUT TYPE"
     },
     "typeMapping": {
         "int4": {
+            "JAVA": "Integer",
+            "C#": "int"
+        },
+        "serial": {
             "JAVA": "Integer",
             "C#": "int"
         },
@@ -98,13 +106,17 @@
         "JAVA": "public {type} get{capitalFieldName}() {\n\treturn {fieldName};\n}\n\npublic void set{capitalFieldName}({type} {fieldName}) {\n\tthis.{fieldName} = {fieldName};\n}\n\n",
         "C#": null
     },
+    "fieldCase": {
+        "JAVA": "LOWER",
+        "C#": "UPPER"
+    },
     "DAOCompatibility": {
         "JAVA": ["JPA", "MyDAO"],
         "C#": ["Entity"]
     },
     "DAOImports": {
         "JPA": ["jakarta.persistence.*"],
-        "Entity": ["System.ComponentModel.DataAnnotations", "System.ComponentModel.DataAnnotations.Schema"],
+        "Entity": ["System.ComponentModel.DataAnnotations.Schema"],
         "MyDAO": ["generalisation.annotations.DBTable", "generalisation.annotations.DBField"]
     },
     "DAOAnnotations": {
@@ -121,7 +133,7 @@
     },
     "PKAnnotations": {
         "JPA": "@Id\n@GeneratedValue(strategy = GenerationType.IDENTITY)",
-        "Entity": "[Key]\n[DatabaseGenerated(DatabaseGeneratedOption.Identity)]",
+        "Entity": "[Key]",
         "MyDAO": ", isPrimaryKey = true"
     },
     "FKAnnotations": {

@@ -1,30 +1,44 @@
 {
+    "framework": ["spring", "ituFramework", ".net"],
     "frameworkCompatibility": {
-        "JAVA": "spring, ituFramework",
-        "C#": ".net"
+        "JAVA": ["spring", "ituFramework"],
+        "C#": [".net"]
     },
     "controllerImports": {
         "spring": {
             "REST": [
                 "org.springframework.beans.factory.annotation.Autowired",
                 "org.springframework.http.ResponseEntity",
+                "org.springframework.http.HttpStatus",
                 "org.springframework.web.bind.annotation.*",
-                "java.util.List"
+                "java.util.List",
+                "java.util.Optional"
             ],
-            "MVC": null
+            "MVC": [
+                "org.springframework.beans.factory.annotation.Autowired",
+                "org.springframework.stereotype.Controller",
+                "org.springframework.ui.Model",
+                "org.springframework.web.bind.annotation.*",
+                "org.springframework.web.servlet.mvc.support.RedirectAttributes",
+                "java.util.List",
+                "java.util.ArrayList"
+            ]
         },
         ".net": {
             "REST": [
-                "using Microsoft.AspNetCore.Mvc",
-                "using Microsoft.EntityFrameworkCore"
+                "Microsoft.AspNetCore.Mvc",
+                "Microsoft.EntityFrameworkCore"
             ],
-            "MVC": null
+            "MVC": [
+                "Microsoft.AspNetCore.Mvc",
+                "Microsoft.EntityFrameworkCore"
+            ]
         }
     },
     "classAnnotation": {
         "spring": {
             "REST": "@RestController\n@RequestMapping(\"{requestMapping}\")",
-            "MVC": null
+            "MVC": "@Controller"
         },
         ".net": {
             "REST": "[ApiController]\n[Route(\"{requestMapping}\")]",
@@ -38,13 +52,13 @@
         },
         ".net": {
             "REST": "ControllerBase",
-            "MVC": null
+            "MVC": "Controller"
         }
     },
     "dbServiceAnnotation": {
         "spring": {
             "REST": "@Autowired",
-            "MVC": null
+            "MVC": "@Autowired"
         },
         ".net": {
             "REST": null,
@@ -53,12 +67,12 @@
     },
     "dbServiceDeclaration": {
         "spring": {
-            "REST": "private {dbServiceType} {dbServiceName};",
-            "MVC": null
+            "REST": "private {dbServiceType} {dbServiceFieldName};",
+            "MVC": "private {dbServiceType} {dbServiceFieldName};"
         },
         ".net": {
-            "REST": "private readonly {dbServiceType} {dbServiceName};",
-            "MVC": null
+            "REST": "private readonly {dbServiceType} _{dbServiceFieldName};",
+            "MVC": "private readonly {dbServiceType} _{dbServiceFieldName};"
         }
     },
     "constructor": {
@@ -67,8 +81,8 @@
             "MVC": null
         },
         ".net": {
-            "REST": "public {controllerName}({dbServiceType} {dbServiceName}) {\n{dbServiceName} = {dbServiceName};\n}",
-            "MVC": null
+            "REST": "public {controllerName}({dbServiceType} {dbServiceFieldName}) {\n_{dbServiceFieldName} = {dbServiceFieldName};\n}",
+            "MVC": "public {controllerName}({dbServiceType} {dbServiceFieldName}) {\n_{dbServiceFieldName} = {dbServiceFieldName};\n}"
         }
     },
     "CRUDMethods": {
@@ -76,7 +90,7 @@
             "annotation": {
                 "spring": {
                     "REST": "@GetMapping",
-                    "MVC": null
+                    "MVC": "@GetMapping(\"/{typeFieldName}s\")"
                 },
                 ".net": {
                     "REST": "[HttpGet]",
@@ -85,74 +99,74 @@
             },
             "returnType": {
                 "spring": {
-                    "REST": "List<{type}>",
-                    "MVC": null
+                    "REST": "ResponseEntity<List<{type}>>",
+                    "MVC": "String"
                 },
                 ".net": {
                     "REST": "async Task<ActionResult<IEnumerable<{type}>>>",
-                    "MVC": null
+                    "MVC": "async Task<IActionResult>"
                 }
             },
             "declaration": {
                 "spring": {
                     "REST": "getAll{type}s()",
-                    "MVC": null
+                    "MVC": "getAll(Model model)"
                 },
                 ".net": {
                     "REST": "GetAll{type}s()",
-                    "MVC": null
+                    "MVC": "Index()"
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "",
-                    "MVC": ""
+                    "REST": "try {\n List<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll();\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                    "MVC": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}s\";"
                 },
                 ".net": {
-                    "REST": "",
-                    "MVC":""
+                    "REST": "return await _{dbServiceFieldName}.{type}s.ToListAsync();",
+                    "MVC": "return View(await _{dbServiceFieldName}.{type}s.ToListAsync());"
                 }
             }
         },
         "getById": {
             "annotation": {
                 "spring": {
-                    "REST": "@GetMapping(\"/{id}\")",
-                    "MVC": null
+                    "REST": "@GetMapping(\"/{{lowerPkFieldName}}\")",
+                    "MVC": "@GetMapping(\"/{typeFieldName}s/{{lowerPkFieldName}}\")"
                 },
                 ".net": {
-                    "REST": "[HttpGet(\"{id}\")]",
+                "REST": "[HttpGet(\"{{lowerPkFieldName}}\")]",
                     "MVC": null
                 }
             },
             "returnType": {
                 "spring": {
                     "REST": "ResponseEntity<{type}>",
-                    "MVC": null
+                    "MVC": "String"
                 },
                 ".net": {
                     "REST": "async Task<ActionResult<{type}>>",
-                    "MVC": null
+                    "MVC": "async Task<IActionResult>"
                 }
             },
             "declaration": {
                 "spring": {
-                    "REST": "get{type}ById(@PathVariable {pkFieldType} {pkFieldName})",
-                    "MVC": null
+                    "REST": "get{type}ById(@PathVariable {pkFieldType} {lowerPkFieldName})",
+                    "MVC": "edit{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)"
                 },
                 ".net": {
-                    "REST": "Get{type}ById({pkFieldType} {pkFieldName})",
-                    "MVC": null
+                    "REST": "Get{type}ById({pkFieldType} {lowerPkFieldName})",
+                    "MVC": "Edit({pkFieldType}? {lowerPkFieldName})"
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "",
-                    "MVC": ""
+                    "REST": "Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({typeFieldName}Data.get(), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }",
+                    "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById(id).get();\n\n      model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
                 },
                 ".net": {
-                    "REST": "",
-                    "MVC":""
+                    "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
+                    "MVC":"if ({lowerPkFieldName} == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\nreturn View({typeFieldName});"
                 }
             }
         },
@@ -160,7 +174,7 @@
             "annotation": {
                 "spring": {
                     "REST": "@PostMapping",
-                    "MVC": null
+                    "MVC": "@GetMapping(\"/{typeFieldName}s/new\")"
                 },
                 ".net": {
                     "REST": "[HttpPost]",
@@ -170,115 +184,115 @@
             "returnType": {
                 "spring": {
                     "REST": "ResponseEntity<{type}>",
-                    "MVC": null
+                    "MVC": "String"
                 },
                 ".net": {
                     "REST": "async Task<ActionResult<{type}>>",
-                    "MVC": null
+                    "MVC": "IActionResult"
                 }
             },
             "declaration": {
                 "spring": {
-                    "REST": "create{type}(@RequestBody {type} {parameterName})",
-                    "MVC": null
+                    "REST": "create{type}(@RequestBody {type} {typeFieldName})",
+                    "MVC": "add{type}(Model model)"
                 },
                 ".net": {
-                    "REST": "Create{type}({type} {parameterName})",
-                    "MVC": null
+                    "REST": "Create{type}({type} {typeFieldName})",
+                    "MVC": "Create()"
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "",
-                    "MVC": ""
+                    "REST": "try {\n {type} _{typeFieldName} = {dbServiceFieldName}.save({typeFieldName});\n return new ResponseEntity<>(_{typeFieldName}, HttpStatus.CREATED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                    "MVC": "{type} {typeFieldName} = new {type}();\n\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}_form\";"
                 },
                 ".net": {
-                    "REST": "",
-                    "MVC":""
+                    "REST": "_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
+                    "MVC":"return View();"
                 }
             }
         },
         "update": {
             "annotation": {
                 "spring": {
-                    "REST": "@PutMapping(\"/{id}\")",
-                    "MVC": null
+                    "REST": "@PutMapping(\"/{{lowerPkFieldName}}\")",
+                    "MVC": "@PostMapping(\"/{typeFieldName}s/save\")"
                 },
                 ".net": {
-                    "REST": "[HttpPut(\"{id}\")]",
-                    "MVC": null
+                    "REST": "[HttpPut(\"{{lowerPkFieldName}}\")]",
+                    "MVC": "[HttpPost]"
                 }
             },
             "returnType": {
                 "spring": {
                     "REST": "ResponseEntity<{type}>",
-                    "MVC": null
+                    "MVC": "String"
                 },
                 ".net": {
                     "REST": "async Task<IActionResult>",
-                    "MVC": null
+                    "MVC": "async Task<IActionResult>"
                 }
             },
             "declaration": {
                 "spring": {
-                    "REST": "update{type}(@PathVariable {pkFieldType} {pkFieldName}, @RequestBody {type} {parameterName})",
-                    "MVC": null
+                    "REST": "update{type}(@PathVariable {pkFieldType} {lowerPkFieldName}, @RequestBody {type} {typeFieldName})",
+                    "MVC": "save{type}({type} {typeFieldName}, RedirectAttributes redirectAttributes)"
                 },
                 ".net": {
-                    "REST": "Update{type}({pkFieldType} {pkFieldName}, {type} {parameterName})",
-                    "MVC": null
+                    "REST": "Update{type}({pkFieldType} {lowerPkFieldName}, {type} {typeFieldName})",
+                    "MVC": "Update({type} {typeFieldName})"
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "",
-                    "MVC": ""
+                    "REST": "try{\n if ({lowerPkFieldName} != {typeFieldName}.get{upperPkFieldName}()) {\n return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);\n }\n Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({dbServiceFieldName}.save({typeFieldName}), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                    "MVC": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
                 },
                 ".net": {
-                    "REST": "",
-                    "MVC":""
+                    "REST": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
+                    "MVC":"if (ModelState.IsValid)\n {\n try\n {\n _{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\nreturn RedirectToAction(nameof(Index));\n}\nreturn View({typeFieldName});"
                 }
             }
         },
         "delete": {
             "annotation": {
                 "spring": {
-                    "REST": "@DeleteMapping(\"/{id}\")",
-                    "MVC": null
+                    "REST": "@DeleteMapping(\"/{{lowerPkFieldName}}\")",
+                    "MVC": "@GetMapping(\"/{typeFieldName}s/delete/{{lowerPkFieldName}}\")"
                 },
                 ".net": {
-                    "REST": "[HttpDelete(\"{id}\")]",
+                    "REST": "[HttpDelete(\"{{lowerPkFieldName}}\")]",
                     "MVC": null
                 }
             },
             "returnType": {
                 "spring": {
                     "REST": "ResponseEntity<Void>",
-                    "MVC": null
+                    "MVC": "String"
                 },
                 ".net": {
                     "REST": "async Task<IActionResult>",
-                    "MVC": null
+                    "MVC": "async Task<IActionResult>"
                 }
             },
             "declaration": {
                 "spring": {
-                    "REST": "delete{type}(@PathVariable {pkFieldType} {pkFieldName})",
-                    "MVC": null
+                    "REST": "delete{type}(@PathVariable {pkFieldType} {lowerPkFieldName})",
+                    "MVC": "delete{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)"
                 },
                 ".net": {
-                    "REST": "Delete{type}({pkFieldType} {pkFieldName})",
-                    "MVC": null
+                    "REST": "Delete{type}({pkFieldType} {lowerPkFieldName})",
+                    "MVC": "Delete({pkFieldType}? {lowerPkFieldName})"
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "",
-                    "MVC": ""
+                    "REST": "try {\n {dbServiceFieldName}.deleteById({lowerPkFieldName});\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n catch(Exception e) {\n return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                    "MVC": "try {\n    {dbServiceFieldName}.deleteById({lowerPkFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
                 },
                 ".net": {
-                    "REST": "",
-                    "MVC":""
+                    "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn NoContent();",
+                    "MVC":"if ({lowerPkFieldName} == null)\n{\nreturn NotFound();\n}\n\nvar {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn RedirectToAction(nameof(Index));"
                 }
             }
         }

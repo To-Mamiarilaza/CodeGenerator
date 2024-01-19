@@ -1,0 +1,12 @@
+#package#
+
+#imports#
+
+public class {type}Context : DbContext
+{
+    public {type}Context(DbContextOptions<{type}Context> options) : base(options)
+    {
+    }
+
+    public DbSet<{type}> {type}s { get; set; }
+}
