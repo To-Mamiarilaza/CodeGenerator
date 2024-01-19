@@ -1,0 +1,8 @@
+#package#
+
+#imports#
+
+@Repository
+public interface {type}Repository extends JpaRepository<{type}, {pkFieldType}> {
+
+}

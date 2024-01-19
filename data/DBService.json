@@ -1,0 +1,16 @@
+{
+    "DBServices": ["repository", "context"],
+    "DAOServiceRequirements": {
+        "JPA": "repository",
+        "Entity": "context",
+        "MyDAO": null
+    },
+    "DBServiceImports": {
+        "repository": ["org.springframework.data.jpa.repository.JpaRepository", "org.springframework.stereotype.Repository"],
+        "context": ["Microsoft.EntityFrameworkCore"]
+    },
+    "fieldName": {
+        "repository": "{fieldName}",
+        "context": "context"
+    }
+}

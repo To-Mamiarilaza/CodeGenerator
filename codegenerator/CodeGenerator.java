@@ -15,6 +15,7 @@ import com.google.gson.JsonElement;
 
 import codegenerator.controller.Controller;
 import codegenerator.database.*;
+import codegenerator.dbservice.DBService;
 import codegenerator.model.*;
 import codegenerator.util.CLIUtil;
 import codegenerator.util.CodeFormatter;
@@ -112,17 +113,31 @@ public class CodeGenerator {
 
     public void resolveDependencyImport(Model model) throws Exception {
         List<Column> fKColumns = model.getTable().getForeignKeyColumns();
+        String oldImport = "";  // for managing import redondence
+
         for (Column column : fKColumns) {
             Model referencedModel = getModelWithName(column.getForeignKey().getTableName());
             if (referencedModel != null) {
                 String importDeclaration = Model.getModelData().get("imports").getAsJsonObject()
                         .get(model.getLanguage()).getAsString();
-                String typeImport = referencedModel.getPackageName() + "." + referencedModel.getClassName();
+                
+                String importMethod = Model.getModelData().get("importMethod").getAsJsonObject().get(model.getLanguage()).getAsString();
+                String typeImport = referencedModel.getPackageName();
+                if (importMethod.equals("WITH TYPE")) {
+                    typeImport += "." + referencedModel.getClassName();
+                }
 
-                importDeclaration = importDeclaration.replace("{type}", typeImport);
+                // avoid redondancies
+                if (oldImport.contains(typeImport)) {
+                    model.setTemplateContent(CodeFormatter.removeContainingLine("#import-" + model.getClassName() + "#",
+                        model.getTemplateContent()));
+                } else {
+                    importDeclaration = importDeclaration.replace("{type}", typeImport);
+                    model.setTemplateContent(
+                            model.getTemplateContent().replace("#import-" + referencedModel.getClassName() + "#", importDeclaration));
+                    oldImport += "-" + typeImport;
+                }
 
-                model.setTemplateContent(
-                        model.getTemplateContent().replace("#import-" + referencedModel.getClassName() + "#", importDeclaration));
             } else {
                 model.setTemplateContent(CodeFormatter.removeContainingLine("#import-" + model.getClassName() + "#",
                         model.getTemplateContent()));
@@ -142,15 +157,9 @@ public class CodeGenerator {
         }
     }
 
-    public void generateModel(String language, String outputPath, JsonObject modelConfig) throws Exception {
+    public void generateModel(String language, String DAO, String outputPath, JsonObject modelConfig) throws Exception {
         // check if the given language exist
         checkLanguageExistence(language);
-
-        JsonElement DAOElement = modelConfig.get("DAO");
-        String DAO = "";
-        if (!DAOElement.isJsonNull()) {
-            DAO = DAOElement.getAsString();
-        }
 
         JsonArray tableArray = modelConfig.get("tables").getAsJsonArray();
 
@@ -202,6 +211,80 @@ public class CodeGenerator {
 
     }
 
+    public void checkFrameworkExistence(String framework) throws Exception {
+        if (framework == null || framework.trim().equals("")) {
+            throw new Exception("Le framework ne doit pas etre vide !");
+        }
+
+        String frameworkList = Controller.getControllerData().get("framework").getAsJsonArray().toString();
+        if (!frameworkList.contains(framework)) {
+            throw new Exception("Le framework que vous entrer n'est pas encore supporte !");
+        }
+    }
+
+    public void checkFrameworkCompatibility(String language, String framework) throws Exception {
+        String frameworkList = Controller.getControllerData()
+                    .get("frameworkCompatibility")
+                    .getAsJsonObject().get(language).getAsJsonArray().toString();
+
+        if (!frameworkList.contains(framework)) {
+            throw new Exception("Le framework et le language que vous entrer n'est pas compatible !");
+        }
+    }
+
+    public void generateController(String language, String framework, String DAO, String outputPath, JsonObject controllerConfig) throws Exception {
+        // check if the given framework exist and supported
+        checkFrameworkExistence(framework);
+        checkFrameworkCompatibility(language, framework);
+
+        String type = controllerConfig.get("type").getAsString();
+        String dbServicePackage = controllerConfig.get("dbServicePackage").getAsString();
+
+        JsonArray tableArray = controllerConfig.get("tables").getAsJsonArray();
+        for (JsonElement jsonElement : tableArray) {    
+            JsonObject controllerParameter = jsonElement.getAsJsonObject();
+
+            // if generating all tables
+            if (controllerParameter.get("name").getAsString().equals("*")) {
+                String packageName = controllerParameter.get("package").getAsString();
+                String requestMapping = controllerParameter.get("requestMapping").getAsString();
+
+                List<Table> targetTables = getDatabaseInformation().getTables();
+                for (Table table : targetTables) {
+                    System.out.print("- " + table.getName() + " : ");
+                    Model model = getModelWithName(table.getName());
+
+                    Controller controller = new Controller(model, language, framework, type, DAO, packageName, requestMapping, outputPath, dbServicePackage);
+                    controller.loadTemplate();
+                    controller.generate();
+
+                    System.out.println("OK");
+                }
+            } else {
+                String tableName = controllerParameter.get("name").getAsString();
+                String packageName = controllerParameter.get("package").getAsString();
+                String requestMapping = controllerParameter.get("requestMapping").getAsString();
+                Table targetTable = getDatabaseInformation().getTableWithName(tableName);
+                System.out.print("- " + tableName + " : ");
+
+                if (targetTable != null) {
+                    Model model = getModelWithName(targetTable.getName());
+
+                    Controller controller = new Controller(model, language, framework, type, DAO, packageName, requestMapping, outputPath, dbServicePackage);
+                    controller.loadTemplate();
+                    controller.generate();
+
+                    System.out.println("OK");
+                } else {
+                    System.out.println("ECHOUE");
+                }
+            }
+        }
+
+    }
+
+
+
     public void init(String configFilePath, String action) throws Exception {
         // Clear console first
         System.out.print("\033[H\033[2J");
@@ -214,17 +297,22 @@ public class CodeGenerator {
         String outputPath = config.get("outputPath").getAsString();
         FileUtil.removeDirectory(new File(outputPath));
 
+        String language = config.get("language").getAsString();
+        String framework = config.get("framework").getAsString();
+
+        JsonElement DAOElement = config.get("DAO");
+        String DAO = "";
+        if (!DAOElement.isJsonNull()) {
+            DAO = DAOElement.getAsString();
+        }
 
         if (action.equals("model")) {
             System.out.println("GENERATION CODE MODEL");
-            generateModel(config.get("language").getAsString(), outputPath, config.get("model").getAsJsonObject());
+            generateModel(language, DAO, outputPath, config.get("model").getAsJsonObject());
 
-            // Test the controller
-            Model targetModel = getModelWithName("fiche");
-            Controller controller = new Controller(targetModel, "C#", ".net", "REST", "Entity", "controllers", "fiches", outputPath);
-            controller.loadTemplate();
-            controller.generate();
 
+            System.out.println("\nGENERATION CODE CONTROLLER");
+            generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
         } else if (action.equals("controller")) {
             System.out.println("GENERATION CODE CONTROLLER");
 

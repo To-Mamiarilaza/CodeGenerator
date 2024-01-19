@@ -3,7 +3,9 @@ package codegenerator.controller;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import codegenerator.CodeGenerator;
 import codegenerator.database.Column;
+import codegenerator.dbservice.DBService;
 import codegenerator.model.Model;
 import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
@@ -20,7 +22,9 @@ public class Controller {
     String packageName;
     String requestMapping;
     String outputPath;
+    String dbServicePackage;
     String templateContent;
+    DBService dbService;
 
     /// Getter and setter
     public Model getModel() {
@@ -87,6 +91,14 @@ public class Controller {
         this.outputPath = outputPath;
     }
 
+    public String getDbServicePackage() {
+        return dbServicePackage;
+    }
+
+    public void setDbServicePackage(String dbServicePackage) {
+        this.dbServicePackage = dbServicePackage;
+    }
+
     public String getTemplateContent() {
         return templateContent;
     }
@@ -95,16 +107,33 @@ public class Controller {
         this.templateContent = templateContent;
     }
 
+    public DBService getDbService() {
+        return dbService;
+    }
+
+    public void setDbService(DBService dbService) {
+        this.dbService = dbService;
+    }
+
     /// Constructor
     public Controller(Model model, String language, String framework, String controllerType, String DAO,
-            String packageName, String requestMapping, String outputPath) {
+            String packageName, String requestMapping, String outputPath, String dbServicePackage) {
         this.model = model;
         this.language = language;
         this.framework = framework;
         this.controllerType = controllerType;
         this.DAO = DAO;
         this.packageName = packageName;
-        this.requestMapping = requestMapping;
+        this.dbServicePackage = dbServicePackage;
+
+        if (requestMapping.equals("DEFAULT")) {
+            requestMapping = WordFormatter.toCamelCase(getModel().getTable().getName());
+            if (!getModel().getTable().getName().endsWith("s")) {
+                requestMapping = requestMapping + "s";
+            }
+        }
+        this.requestMapping = "/" + requestMapping;
+
         this.outputPath = WordFormatter.preparePath(outputPath);
     }
 
@@ -130,6 +159,29 @@ public class Controller {
             for (JsonElement controllerImport : controllerImportsElement.getAsJsonArray()) {
                 imports += customImportDeclaration.replace("{type}", controllerImport.getAsString()) + "\n";
             }
+        }
+
+        // Model import
+        String importMethod = getModel().getModelData().get("importMethod").getAsJsonObject().get(getModel().getLanguage()).getAsString();
+        
+        String modelImport = importDeclaration;
+        String type = getModel().getPackageName();
+        if (importMethod.equals("WITH TYPE")) {
+            type += "." + getModel().getClassName();
+        }
+
+        imports += modelImport.replace("{type}", type) + "\n";
+
+        // DB Service Imports
+        if (getDbService() != null) {
+            String dbServiceImport = importDeclaration;
+
+            String dbServiceImportValue = getDbService().getPackageName();
+            if (importMethod.equals("WITH TYPE")) {
+                dbServiceImportValue += "." + getDbService().getClassName();
+            }
+
+            imports += dbServiceImport.replace("{type}", dbServiceImportValue);
         }
 
         // DAO imports requirements
@@ -166,6 +218,8 @@ public class Controller {
     }
 
     public void setDbServiceAnnotation() throws Exception {
+        if (dbService == null) return;
+            
         JsonElement dbServiceAnnotation = getControllerData().get("dbServiceAnnotation").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject().get(getControllerType());
         if (dbServiceAnnotation.isJsonNull()) {
@@ -177,24 +231,31 @@ public class Controller {
     }
 
     public void setDbServiceDeclaration() throws Exception {
+        if (dbService == null) return;
+            
         JsonElement dbServiceDeclaration = getControllerData().get("dbServiceDeclaration").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject().get(getControllerType());
         if (dbServiceDeclaration.isJsonNull()) {
             setTemplateContent(CodeFormatter.removeContainingLine("#dbServiceDeclaration#", getTemplateContent()));
         } else {
-            setTemplateContent(
-                    getTemplateContent().replace("#dbServiceDeclaration#", dbServiceDeclaration.getAsString()));
+            setTemplateContent(getTemplateContent().replace("#dbServiceDeclaration#", dbServiceDeclaration.getAsString()
+                    .replace("{dbServiceType}", getDbService().getClassName())
+                    .replace("{dbServiceFieldName}", getDbService().getFieldName())));
         }
     }
 
     public void setConstructor() throws Exception {
+        if (getDbService() == null) return;
+            
         JsonElement constructor = getControllerData().get("constructor").getAsJsonObject().get(getFramework())
                 .getAsJsonObject().get(getControllerType());
         if (constructor.isJsonNull()) {
             setTemplateContent(CodeFormatter.removeContainingLine("#constructor#", getTemplateContent()));
         } else {
             setTemplateContent(getTemplateContent().replace("#constructor#", constructor.getAsString()
-                .replace("{controllerName}", getControllerName())));
+                .replace("{controllerName}", getControllerName())
+                .replace("{dbServiceType}", getDbService().getClassName())
+                .replace("{dbServiceFieldName}", getDbService().getFieldName())));
         }
     }
 
@@ -243,7 +304,9 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#getAllContent#", getAllContent.getAsString()));
+        setTemplateContent(getTemplateContent().replace("#getAllContent#", getAllContent.getAsString()
+                .replace("{dbServiceFieldName}", getDbService().getFieldName())
+                .replace("{type}", getModel().getClassName())));
     }
 
     public void setGetByIdAnnotation() throws Exception {
@@ -257,7 +320,8 @@ public class Controller {
         if (getByIdAnnotation.isJsonNull()) {
             setTemplateContent(CodeFormatter.removeContainingLine("#getByIdAnnotation#", getTemplateContent()));
         } else {
-            setTemplateContent(getTemplateContent().replace("#getByIdAnnotation#", getByIdAnnotation.getAsString()));
+            setTemplateContent(getTemplateContent().replace("#getByIdAnnotation#", getByIdAnnotation.getAsString())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
         }
     }
 
@@ -284,7 +348,8 @@ public class Controller {
         setTemplateContent(getTemplateContent().replace("#getByIdDeclaration#", getByIdDeclaration.getAsString()
                 .replace("{type}", getModel().getClassName())
                 .replace("{pkFieldType}", getModel().getPrimaryKeyFieldType())
-                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())));
+                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))));
     }
 
     public void setGetByIdContent() throws Exception {
@@ -295,7 +360,13 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#getByIdContent#", getByIdContent.getAsString()));
+        setTemplateContent(getTemplateContent()
+                .replace("#getByIdContent#", getByIdContent.getAsString())
+                .replace("{typeFieldName}", getModel().getFieldName())
+                .replace("{dbServiceFieldName}", getDbService().getFieldName())
+                .replace("{type}", getModel().getClassName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
+        );
 
     }
 
@@ -336,7 +407,8 @@ public class Controller {
 
         setTemplateContent(getTemplateContent().replace("#createDeclaration#", createDeclaration.getAsString()
                 .replace("{type}", getModel().getClassName())
-                .replace("{parameterName}", WordFormatter.toCamelCase(getModel().getTable().getName()))));
+                .replace("{parameterName}", WordFormatter.toCamelCase(getModel().getTable().getName()))
+                .replace("{typeFieldName}", getModel().getFieldName())));
     }
 
     public void setCreateContent() throws Exception {
@@ -347,8 +419,13 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#createContent#", createContent.getAsString()));
-
+        setTemplateContent(getTemplateContent().replace("#createContent#", createContent.getAsString()
+                .replace("{dbServiceFieldName}", getDbService().getFieldName())
+                .replace("{type}", getModel().getClassName())
+                .replace("{typeFieldName}", getModel().getFieldName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
+                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+        ));
     }
 
     public void setUpdateAnnotation() throws Exception {
@@ -362,7 +439,8 @@ public class Controller {
         if (updateAnnotation.isJsonNull()) {
             setTemplateContent(CodeFormatter.removeContainingLine("#updateAnnotation#", getTemplateContent()));
         } else {
-            setTemplateContent(getTemplateContent().replace("#updateAnnotation#", updateAnnotation.getAsString()));
+            setTemplateContent(getTemplateContent().replace("#updateAnnotation#", updateAnnotation.getAsString())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
         }
     }
 
@@ -389,6 +467,7 @@ public class Controller {
         setTemplateContent(getTemplateContent().replace("#updateDeclaration#", updateDeclaration.getAsString()
                 .replace("{pkFieldType}", getModel().getPrimaryKeyFieldType())
                 .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
                 .replace("{type}", getModel().getClassName())
                 .replace("{parameterName}", WordFormatter.toCamelCase(getModel().getTable().getName()))));
     }
@@ -401,7 +480,13 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#updateContent#", updateContent.getAsString()));
+        setTemplateContent(getTemplateContent().replace("#updateContent#", updateContent.getAsString())
+                .replace("{typeFieldName}", getModel().getFieldName())
+                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+                .replace("{dbServiceFieldName}", getDbService().getFieldName())
+                .replace("{type}", getModel().getClassName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
+                .replace("{upperPkFieldName}", WordFormatter.capitalizeFirstLetter(getModel().getPrimaryKeyFieldName())));
     }
 
     public void setDeleteAnnotation() throws Exception {
@@ -415,7 +500,8 @@ public class Controller {
         if (deleteAnnotation.isJsonNull()) {
             setTemplateContent(CodeFormatter.removeContainingLine("#deleteAnnotation#", getTemplateContent()));
         } else {
-            setTemplateContent(getTemplateContent().replace("#deleteAnnotation#", deleteAnnotation.getAsString()));
+            setTemplateContent(getTemplateContent().replace("#deleteAnnotation#", deleteAnnotation.getAsString())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
         }
     }
 
@@ -441,7 +527,7 @@ public class Controller {
 
         setTemplateContent(getTemplateContent().replace("#deleteDeclaration#", deleteDeclaration.getAsString()
                 .replace("{pkFieldType}", getModel().getPrimaryKeyFieldType())
-                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
                 .replace("{type}", getModel().getClassName())));
     }
 
@@ -453,13 +539,33 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#deleteContent#", deleteContent.getAsString()));
+        setTemplateContent(getTemplateContent().replace("#deleteContent#", deleteContent.getAsString())
+                .replace("{typeFieldName}", getModel().getFieldName())
+                .replace("{dbServiceFieldName}", getDbService().getFieldName())
+                .replace("{type}", getModel().getClassName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
+    }
+
+    public void executeDBServiceSetting() throws Exception {
+        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject().get(getDAO());
+        if (!dbServiceElement.isJsonNull()) {
+            DBService dbService = new DBService(getModel(), getDAO(), dbServiceElement.getAsString(), getDbServicePackage(), getOutputPath());
+            dbService.loadTemplate();
+            dbService.generate();
+            setDbService(dbService);
+        } else {
+            CodeFormatter.removeContainingLine("#dbServiceAnnotation#", getTemplateContent());
+            CodeFormatter.removeContainingLine("#dbServiceDeclaration#", getTemplateContent());
+        }
     }
 
     public void loadTemplate() throws Exception {
         // get the template content
         String templateContent = FileUtil.toString("./template/controller.template");
         setTemplateContent(templateContent);
+
+        // Execute DB service setting
+        executeDBServiceSetting();
 
         // set all file content by part
         setPackageDeclaration();
@@ -499,6 +605,8 @@ public class Controller {
         setDeleteReturnType();
         setDeleteDeclaration();
         setDeleteContent();
+
+        setTemplateContent(CodeFormatter.formatCode(getTemplateContent()));
     }
 
     public String getControllerName() {
@@ -516,8 +624,7 @@ public class Controller {
         FileUtil.createFileWithContent(getTemplateContent(), getOutputPath() + packagePath, getFileName());
     }
 
-    public JsonObject getControllerData() throws Exception {
+    public static JsonObject getControllerData() throws Exception {
         return JsonUtil.toJsonObject("./data/controller.json");
     }
-
 }

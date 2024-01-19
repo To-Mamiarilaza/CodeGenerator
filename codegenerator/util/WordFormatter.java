@@ -41,6 +41,14 @@ public class WordFormatter {
 
         return Character.toUpperCase(word.charAt(0)) + word.substring(1);
     }
+
+    public static String firstLetterToLower(String word) {
+        if (word == null || word.isEmpty()) {
+            return word;
+        }
+
+        return Character.toLowerCase(word.charAt(0)) + word.substring(1);
+    }
     
     public static String preparePath(String path) {
         if (!path.endsWith("/")) {
