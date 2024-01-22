@@ -231,9 +231,9 @@ public class View {
         String tableHead = "";
         for (Column c : getTable().getColumns()) {
             String th = WordFormatter.toSpacedUpperCase(c.getName());
-            tableHead += "\n\t\t\t\t\t<th>" + th + "</th>";
+            tableHead += "\n\t\t\t\t\t\t<th>" + th + "</th>";
         }
-        tableHead += "\n\t\t\t\t\t<th></th>";
+        tableHead += "\n\t\t\t\t\t\t<th></th>";
         this.tableHead = tableHead;
     }
 
@@ -328,7 +328,7 @@ public class View {
     }
 
     public void loadListPageTemplate() throws Exception {
-        String listContent = FileUtil.toString("./template/view/list.template");
+        String listContent = FileUtil.toStringInnerFile("/template/view/list.template");
         listContent = listContent.replace("#pageImport#", getPageImport());
         listContent = listContent.replace("#pageRequirement#", getPageRequirement("list"));
         listContent = listContent.replace("#htmlRequirement#", getHtmlRequirement());
@@ -343,7 +343,7 @@ public class View {
     }
 
     public void loadCreatePageTemplate() throws Exception {
-        String createContent = FileUtil.toString("./template/view/create.template");
+        String createContent = FileUtil.toStringInnerFile("/template/view/create.template");
         createContent = createContent.replace("#pageImport#", getPageImport());
         createContent = createContent.replace("#pageRequirement#", getPageRequirement("edit"));
         createContent = createContent.replace("#htmlRequirement#", getHtmlRequirement());

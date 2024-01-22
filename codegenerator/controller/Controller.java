@@ -561,7 +561,7 @@ public class Controller {
 
     public void loadTemplate() throws Exception {
         // get the template content
-        String templateContent = FileUtil.toString("./template/controller.template");
+        String templateContent = FileUtil.toStringInnerFile("/template/controller.template");
         setTemplateContent(templateContent);
 
         // Execute DB service setting

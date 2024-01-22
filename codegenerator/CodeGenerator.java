@@ -340,9 +340,9 @@ public class CodeGenerator {
         JsonObject config = JsonUtil.toJsonObject(configFilePath, "OUT");
         setDatabaseInformation(config.get("database").getAsJsonObject());
 
-        // remove outputPath if exist
+        // remove outputPath if exist , not required
         String outputPath = config.get("outputPath").getAsString();
-        FileUtil.removeDirectory(new File(outputPath));
+        // FileUtil.removeDirectory(new File(outputPath));
 
         String language = config.get("language").getAsString();
         String framework = config.get("framework").getAsString();

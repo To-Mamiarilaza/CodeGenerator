@@ -279,7 +279,7 @@ public class Model {
 
     public void loadTemplate() throws Exception {
         // get the template content
-        String templateContent = FileUtil.toString("./template/model.template");
+        String templateContent = FileUtil.toStringInnerFile("/template/model.template");
 
         // get all file content
         String packageDeclaration = getPackageDeclaration();

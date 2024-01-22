@@ -111,7 +111,7 @@ public class DBService {
 
     public void loadTemplate() throws Exception {
         // get the template content
-        String templateContent = FileUtil.toString("./template/dbservice/" + getType() + ".template");
+        String templateContent = FileUtil.toStringInnerFile("/template/dbservice/" + getType() + ".template");
         setTemplateContent(templateContent);
 
         setPackageDeclaration();

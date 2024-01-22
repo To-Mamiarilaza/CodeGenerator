@@ -35,7 +35,7 @@ public class FileUtil {
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                content.append(line);
+                content.append("\n" + line);
             }
 
             return content.toString();

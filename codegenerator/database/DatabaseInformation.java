@@ -150,6 +150,19 @@ public class DatabaseInformation {
 
     public Connection getConnection() throws Exception {
         String urlPrefix = getDatabaseData().get("information").getAsJsonObject().get(this.type).getAsJsonObject().get("urlPrefix").getAsString();
+        
+        switch (getType()) {
+            case "postgresql":
+                    Class.forName("org.postgresql.Driver");
+                break;
+
+            case "mysql":
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                break;
+            default:
+                break;
+        }
+
         Connection connection = DriverManager.getConnection("jdbc:" + urlPrefix + "://localhost:5432/" + this.getName(), this.getUser(), this.getPassword());
         return connection;
     }
