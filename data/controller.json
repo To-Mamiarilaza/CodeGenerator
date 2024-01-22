@@ -120,7 +120,7 @@
             "content": {
                 "spring": {
                     "REST": "try {\n List<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll();\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}s\";"
+                    "MVC": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}/{typeFieldName}s\";"
                 },
                 ".net": {
                     "REST": "return await _{dbServiceFieldName}.{type}s.ToListAsync();",
@@ -136,7 +136,7 @@
                 },
                 ".net": {
                 "REST": "[HttpGet(\"{{lowerPkFieldName}}\")]",
-                    "MVC": null
+                "MVC": null
                 }
             },
             "returnType": {
@@ -156,17 +156,17 @@
                 },
                 ".net": {
                     "REST": "Get{type}ById({pkFieldType} {lowerPkFieldName})",
-                    "MVC": "Edit({pkFieldType}? {lowerPkFieldName})"
+                    "MVC": "Edit({pkFieldType}? id)"
                 }
             },
             "content": {
                 "spring": {
                     "REST": "Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({typeFieldName}Data.get(), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }",
-                    "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById(id).get();\n\n      model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
+                    "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
                 },
                 ".net": {
                     "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
-                    "MVC":"if ({lowerPkFieldName} == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\nreturn View({typeFieldName});"
+                    "MVC":"if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync(id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\nreturn View(\"{type}Form\", {typeFieldName});"
                 }
             }
         },
@@ -204,11 +204,11 @@
             "content": {
                 "spring": {
                     "REST": "try {\n {type} _{typeFieldName} = {dbServiceFieldName}.save({typeFieldName});\n return new ResponseEntity<>(_{typeFieldName}, HttpStatus.CREATED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "{type} {typeFieldName} = new {type}();\n\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}_form\";"
+                    "MVC": "{type} {typeFieldName} = new {type}();\n\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";"
                 },
                 ".net": {
                     "REST": "_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
-                    "MVC":"return View();"
+                    "MVC":"return View(\"{type}Form\");"
                 }
             }
         },
@@ -250,7 +250,7 @@
                 },
                 ".net": {
                     "REST": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
-                    "MVC":"if (ModelState.IsValid)\n {\n try\n {\n _{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\nreturn RedirectToAction(nameof(Index));\n}\nreturn View({typeFieldName});"
+                    "MVC":"try\n {\n _{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\nreturn RedirectToAction(nameof(Index));\n;"
                 }
             }
         },
@@ -282,7 +282,7 @@
                 },
                 ".net": {
                     "REST": "Delete{type}({pkFieldType} {lowerPkFieldName})",
-                    "MVC": "Delete({pkFieldType}? {lowerPkFieldName})"
+                    "MVC": "Delete({pkFieldType}? id)"
                 }
             },
             "content": {
@@ -292,7 +292,7 @@
                 },
                 ".net": {
                     "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn NoContent();",
-                    "MVC":"if ({lowerPkFieldName} == null)\n{\nreturn NotFound();\n}\n\nvar {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn RedirectToAction(nameof(Index));"
+                    "MVC":"if (id == null)\n{\nreturn NotFound();\n}\n\nvar {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync(id);\n\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn RedirectToAction(nameof(Index));"
                 }
             }
         }

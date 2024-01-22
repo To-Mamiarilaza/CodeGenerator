@@ -116,7 +116,7 @@
     },
     "DAOImports": {
         "JPA": ["jakarta.persistence.*"],
-        "Entity": ["System.ComponentModel.DataAnnotations.Schema"],
+        "Entity": ["System.ComponentModel.DataAnnotations.Schema", "System.ComponentModel.DataAnnotations"],
         "MyDAO": ["generalisation.annotations.DBTable", "generalisation.annotations.DBField"]
     },
     "DAOAnnotations": {

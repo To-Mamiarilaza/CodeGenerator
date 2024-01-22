@@ -1,17 +1,21 @@
 package codegenerator.view;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import codegenerator.database.Column;
 import codegenerator.database.Table;
+import codegenerator.model.Model;
+import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
 import codegenerator.util.WordFormatter;
 
 public class View {
+    private Model model;
     private Table table;
     private String choice;
     private String fileName;
-    private String pageRequirement;
+    private String viewPackage;
     private String htmlRequirement;
     private String pageTitle;
     private String formAction;
@@ -20,20 +24,27 @@ public class View {
     private String tableBody;
     private JsonObject data;
     private String outputPath;
+    private String pageImport;
+    private String templateContent;
+    private String listPageTemplateContent;
+    private String createPageTemplateContent;
+    private String updatePageTemplateContent;
 
-    public View(Table table, String choice, String outputPath, JsonObject data) {
-        setTable(table);
+    public View(Model model, String choice, String viewPackage, String outputPath, JsonObject data) throws Exception {
+        setModel(model);
+        setTable(model.getTable());
         setChoice(choice);
+        setViewPackage(viewPackage);
         setData(data);
         setOutputPath(outputPath);
         setFileName();
-        setPageRequirement();
         setHtmlRequirement();
         setPageTitle();
         setFormAction();
         setTableHead();
         setTableBody();
         setFormInput();
+        setPageImport();
     }
 
     public Table getTable() {
@@ -44,12 +55,60 @@ public class View {
         this.table = table;
     }
 
+    public Model getModel() {
+        return model;
+    }
+
+    public void setModel(Model model) {
+        this.model = model;
+    }
+
     public String getChoice() {
         return choice;
     }
 
     public void setChoice(String choice) {
         this.choice = choice;
+    }
+
+    public String getViewPackage() {
+        return viewPackage;
+    }
+
+    public void setViewPackage(String viewPackage) {
+        this.viewPackage = viewPackage;
+    }
+
+    public String getTemplateContent() {
+        return templateContent;
+    }
+
+    public void setTemplateContent(String templateContent) {
+        this.templateContent = templateContent;
+    }
+
+    public String getListPageTemplateContent() {
+        return listPageTemplateContent;
+    }
+
+    public void setListPageTemplateContent(String listPageTemplateContent) {
+        this.listPageTemplateContent = listPageTemplateContent;
+    }
+
+    public String getCreatePageTemplateContent() {
+        return createPageTemplateContent;
+    }
+
+    public void setCreatePageTemplateContent(String createPageTemplateContent) {
+        this.createPageTemplateContent = createPageTemplateContent;
+    }
+
+    public String getUpdatePageTemplateContent() {
+        return updatePageTemplateContent;
+    }
+
+    public void setUpdatePageTemplateContent(String updatePageTemplateContent) {
+        this.updatePageTemplateContent = updatePageTemplateContent;
     }
 
     public String getFileName() {
@@ -59,20 +118,38 @@ public class View {
     public void setFileName() {
         String fileExtension = getData().get("page").getAsJsonObject().get("fileExtension").getAsJsonObject()
                 .get(getChoice()).getAsString();
-        String fileName = WordFormatter.toCamelCase(getTable().getName()) + fileExtension;
+        String fileName = WordFormatter.toCamelCase(getModel().getClassName()) + fileExtension;
         this.fileName = fileName;
     }
 
-    public String getPageRequirement() {
-        return pageRequirement;
+    public String getPageFileName(String targetPage) {
+        String fileExtension = getData().get("page").getAsJsonObject().get("fileExtension").getAsJsonObject()
+                .get(getChoice()).getAsString();
+        String fileName = getData().get("page").getAsJsonObject().get("fileName")
+                .getAsJsonObject().get(targetPage).getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+                .replace("{className}", getModel().getClassName());
+        return fileName + fileExtension;
     }
 
-    public void setPageRequirement() {
+    public String getSelfPackaging() {
+        String packagingCase = getData().get("page").getAsJsonObject().get("packagingCase").getAsJsonObject()
+        .get(getChoice()).getAsString();
+        String selfPackaging = getModel().getClassName();
+        if (packagingCase.equals("LOWER")) {
+            selfPackaging = WordFormatter.firstLetterToLower(selfPackaging);
+        }
+        return selfPackaging;
+    }
+ 
+    public String getPageRequirement(String targetPage) {
         String pageRequirement = getData().get("page").getAsJsonObject().get("pageRequirement").getAsJsonObject()
+                .get(targetPage).getAsJsonObject()
                 .get(getChoice()).getAsString();
-        String className = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(getTable().getName()));
+        String className = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(getModel().getClassName()));
         pageRequirement = pageRequirement.replace("{className}", className);
-        this.pageRequirement = pageRequirement;
+       
+        return pageRequirement;
     }
 
     public String getHtmlRequirement() {
@@ -91,8 +168,14 @@ public class View {
     }
 
     public void setPageTitle() {
-        String pageTitle = WordFormatter.toSpacedUpperCase(getTable().getName());
+        String pageTitle = WordFormatter.toSpacedUpperCase(getModel().getClassName());
         this.pageTitle = pageTitle;
+    }
+
+    public String getDescription(String targetPage) {
+        String listDescription = getData().get("page").getAsJsonObject().get("description").getAsJsonObject()
+        .get(targetPage).getAsString().replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
+        return listDescription;
     }
 
     public String getFormAction() {
@@ -100,24 +183,41 @@ public class View {
     }
 
     public void setFormAction() {
-        String formAction = "/" + WordFormatter.toCamelCase(getTable().getName());
-        this.formAction = formAction;
+        this.formAction =  getData().get("page").getAsJsonObject().get("updateLink")
+            .getAsJsonObject().get(getChoice()).getAsString()
+            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+            .replace("{className}", getModel().getClassName());
     }
 
     public String getFormInput() {
         return formInput;
     }
 
-    public void setFormInput() {
+    public void setFormInput() throws Exception {
         String formInput = "";
+        String fieldCase = Model.getModelData().get("fieldCase").getAsJsonObject().get(getModel().getLanguage()).getAsString();
+
         for (Column c : getTable().getColumns()) {
             if (!c.getIsPrimaryKey()) {
-                String id = c.getName().replaceAll("_","-");
                 String type = getData().get("inputMapping").getAsJsonObject().get(c.getType()).getAsString();
-                String name = c.getName();
-                String label = WordFormatter.toSpacedUpperCase(name);
-                String input = "\n\t\t\t<label for=\""+id+"\">"+label+":</label>\n\t\t\t<input id=\""+id+"\" type=\"" + type + "\" name=\"" + name + "\">";
-                formInput += input;
+
+                String inputType = "other";
+                if (type.equals("checkbox")) {
+                    inputType = "checkbox";
+                }
+
+                String formGroupDeclaration = getData().get("page").getAsJsonObject().get("formGroup").getAsJsonObject().get(inputType).getAsJsonObject().get(getChoice()).getAsString();
+
+                // Case checking
+                String fieldName = WordFormatter.toCamelCase(c.getName());
+                if (fieldCase.equals("UPPER")) {
+                    fieldName = WordFormatter.capitalizeFirstLetter(fieldName);
+                }
+                
+                formInput += formGroupDeclaration
+                    .replace("{fieldName}", fieldName)
+                    .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fieldName))
+                    .replace("{fieldInputType}", type);
             }
         }
         this.formInput = formInput;
@@ -133,6 +233,7 @@ public class View {
             String th = WordFormatter.toSpacedUpperCase(c.getName());
             tableHead += "\n\t\t\t\t\t<th>" + th + "</th>";
         }
+        tableHead += "\n\t\t\t\t\t<th></th>";
         this.tableHead = tableHead;
     }
 
@@ -140,8 +241,8 @@ public class View {
         return tableBody;
     }
 
-    public void setTableBody() {
-        String variableName = WordFormatter.toCamelCase(getTable().getName());
+    public void setTableBody() throws Exception {
+        String variableName = WordFormatter.toCamelCase(getModel().getClassName());
         String dataName = variableName + "s";
         String tr = getData().get("page").getAsJsonObject().get("tableLooping").getAsJsonObject()
                 .get("tr").getAsJsonObject().get(getChoice()).getAsString();
@@ -159,6 +260,12 @@ public class View {
             tdCopy = tdCopy.replace("{variableName}", variableName);
             tds += tdCopy;
         }
+
+        tds += getData().get("page").getAsJsonObject().get("listAction")
+                .getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{variableName}", variableName)
+                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName());
+
         tr = tr.replace("{td}", tds);
         this.tableBody = tr;
     }
@@ -179,15 +286,86 @@ public class View {
         return outputPath;
     }
 
-    public void generate() throws Exception{
-        String templateContent = FileUtil.toString("./template/view.template");
-        templateContent = templateContent.replace("#pageRequirement#", getPageRequirement());
-        templateContent = templateContent.replace("#htmlRequirement#", getHtmlRequirement());
-        templateContent = templateContent.replace("#pageTitle#", getPageTitle());
-        templateContent = templateContent.replace("#formAction#", getFormAction());
-        templateContent = templateContent.replace("#formInput#", getFormInput());
-        templateContent = templateContent.replace("#tableHead#", getTableHead());
-        templateContent = templateContent.replace("#tableBody#", getTableBody());
-        FileUtil.createFileWithContent(templateContent, getOutputPath() + "/views/", getFileName());
+    public void setPageImport() {
+        String pageImport = getData().get("page").getAsJsonObject()
+        .get("pageImport").getAsJsonObject().get(getChoice()).getAsString()
+        .replace("{modelPackage}", getModel().getPackageName());
+        this.pageImport = pageImport;
+    }
+
+    public String getPageImport() {
+        return this.pageImport;
+    }
+
+    public String getCreateNewLink() {
+        return getData().get("page").getAsJsonObject().get("createNewLink")
+            .getAsJsonObject().get(getChoice()).getAsString()
+            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+            .replace("{className}", getModel().getClassName());
+    }
+
+    public String getCreateNewDescription() {
+        return "Nouvelle " + WordFormatter.firstLetterToLower(getModel().getClassName());
+    }
+
+    public String getBackLink() {
+        return getData().get("page").getAsJsonObject().get("backLink")
+            .getAsJsonObject().get(getChoice()).getAsString()
+            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+            .replace("{className}", getModel().getClassName());
+    }
+
+    public String getIdHiddenInput() throws Exception {
+        return getData().get("page").getAsJsonObject().get("idHiddenInput")
+            .getAsJsonObject().get(getChoice()).getAsString()
+            .replace("{fieldName}", getModel().getPrimaryKeyFieldName());
+    }
+
+    public String getFormRequirements() throws Exception {
+        return getData().get("page").getAsJsonObject().get("formRequirements")
+            .getAsJsonObject().get(getChoice()).getAsString()
+            .replace("{variableName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
+    }
+
+    public void loadListPageTemplate() throws Exception {
+        String listContent = FileUtil.toString("./template/view/list.template");
+        listContent = listContent.replace("#pageImport#", getPageImport());
+        listContent = listContent.replace("#pageRequirement#", getPageRequirement("list"));
+        listContent = listContent.replace("#htmlRequirement#", getHtmlRequirement());
+        listContent = listContent.replace("#createNewLink#", getCreateNewLink());
+        listContent = listContent.replace("#createNewDescription#", getCreateNewDescription());
+        listContent = listContent.replace("#description#", getDescription("list"));
+        listContent = listContent.replace("#pageTitle#", getPageTitle());
+        listContent = listContent.replace("#tableHead#", getTableHead());
+        listContent = listContent.replace("#tableBody#", getTableBody());
+
+        setListPageTemplateContent(listContent);
+    }
+
+    public void loadCreatePageTemplate() throws Exception {
+        String createContent = FileUtil.toString("./template/view/create.template");
+        createContent = createContent.replace("#pageImport#", getPageImport());
+        createContent = createContent.replace("#pageRequirement#", getPageRequirement("edit"));
+        createContent = createContent.replace("#htmlRequirement#", getHtmlRequirement());
+        createContent = createContent.replace("#description#", getDescription("create"));
+        createContent = createContent.replace("#pageTitle#", getPageTitle());
+        createContent = createContent.replace("#formAction#", getFormAction());
+        createContent = createContent.replace("#formInput#", getFormInput());
+        createContent = createContent.replace("#backLink#", getBackLink());
+        createContent = createContent.replace("#idHiddenInput#", getIdHiddenInput());
+        createContent = createContent.replace("#formRequirements#", getFormRequirements());
+
+        setCreatePageTemplateContent(createContent);
+    }
+
+    public void loadTemplate() throws Exception {
+        loadListPageTemplate();
+        loadCreatePageTemplate();
+    }
+
+    public void generate() {
+        // generating list page
+        FileUtil.createFileWithContent(getListPageTemplateContent(), getOutputPath() + "/" + getViewPackage() + "/" + getSelfPackaging(), getPageFileName("list"));
+        FileUtil.createFileWithContent(getCreatePageTemplateContent(), getOutputPath() + "/" + getViewPackage() + "/" + getSelfPackaging(), getPageFileName("create"));
     }
 }

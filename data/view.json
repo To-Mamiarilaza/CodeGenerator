@@ -5,27 +5,108 @@
       "thymeleaf": ".html",
       "razor": ".cshtml"
     },
+    "fileName": {
+      "list": {
+        "thymeleaf": "{typeFieldName}s",
+        "razor": "Index",
+        "mine": "{typeFieldName}"
+      },
+      "create": {
+        "thymeleaf": "{typeFieldName}_form",
+        "razor": "{className}Form",
+        "mine": "{typeFieldName}_form"
+      },
+      "update": {
+        "thymeleaf": "{typeFieldName}_update",
+        "razor": "{className}Form",
+        "mine": "{typeFieldName}_update"
+      }
+    },
+    "createNewLink": {
+      "thymeleaf": "{typeFieldName}s/new",
+      "mine": "{typeFieldName}/new",
+      "razor": "{className}/Create"
+    },
+    "backLink": {
+      "thymeleaf": "../{typeFieldName}s",
+      "mine": "../{typeFieldName}s",
+      "razor": "../{className}"
+    },
+    "updateLink": {
+      "thymeleaf": "/{typeFieldName}s/save",
+      "mine": "/{typeFieldName}s/save",
+      "razor": "/{className}/Update"
+    },
     "pageRequirement": {
-      "mine": "<%a taglib uri=\"http://java.sun.com/jstl/core\" prefix=\"c\" %>",
-      "thymeleaf": "",
-      "razor": "@model List<{className}>"
+      "list": {
+        "mine": "<%a taglib uri=\"http://java.sun.com/jstl/core\" prefix=\"c\" %>",
+        "thymeleaf": "",
+        "razor": "@model List<{className}>"
+      },
+      "edit": {
+        "mine": "<%a taglib uri=\"http://java.sun.com/jstl/core\" prefix=\"c\" %>",
+        "thymeleaf": "",
+        "razor": "@model {className}"
+      }
     },
     "htmlRequirement": {
       "mine": "",
       "thymeleaf": "xmlns:th=\"http://www.thymeleaf.org\"",
       "razor": ""
     },
+    "formGroup": {
+      "other": {
+        "mine": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<input id=\"{fieldName}\" type=\"{fieldInputType}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
+        "thymeleaf": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<input id=\"{fieldName}\" type=\"{fieldInputType}\" th:field=\"*{{fieldName}}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
+        "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{fieldName}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<input asp-for=\"{fieldName}\" class=\"form-control\" />\n\t\t\t\t\t</div>"
+      },
+      "checkbox": {
+        "mine": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
+        "thymeleaf": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
+        "razor": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" asp-for=\"{fieldName}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" asp-for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t</div>"
+      }
+    },
+    "idHiddenInput": {
+      "mine": "id=\"{fieldName}\"",
+      "thymeleaf": "th:field=\"*{{fieldName}}\"",
+      "razor": "asp-for=\"{fieldName}\""
+    },
+    "formRequirements": {
+      "mine": "",
+      "thymeleaf": "enctype=\"multipart/form-data\" th:object=\"${{variableName}}\"",
+      "razor": ""
+    },
     "tableLooping": {
       "tr": {
         "mine": "\n\t\t\t\t<c:forEach var=\"{variableName}\" items=\"${{dataName}}\">\n\t\t\t\t\t<tr>{td}\n\t\t\t\t\t</tr>\n\t\t\t\t</c:forEach>",
-        "thymeleaf": "\n\t\t\t\t<tr th:each=\"{variableName} : ${{dataName}}\">{td}\n\t\t\t\t</tr>",
+        "thymeleaf": "\n\t\t\t\t<tr th:each=\"{variableName} : ${dataName}\">{td}\n\t\t\t\t</tr>",
         "razor": "\n\t\t\t\t@foreach (var {variableName} in Model)\n\t\t\t\t{\n\t\t\t\t\t<tr>{td}\n\t\t\t\t\t</tr>\n\t\t\t\t}"
       },
       "td": {
         "mine": "\n\t\t\t\t\t\t<td>${{variableName}.{fieldNameNotCapitalize}}</td>",
-        "thymeleaf": "\n\t\t\t\t\t<td th:text=\"${{variableName}.{fieldNameNotCapitalize}}\"></td>",
-        "razor": "\n\t\t\t\t\t\t<td>@{variableName}.{fieldNameCapitalize}</td>"
+        "thymeleaf": "\n\t\t\t\t\t<td>[[${{variableName}.{fieldNameNotCapitalize}}]]</td>",
+        "razor": "\n\t\t\t\t\t\t<td>@Html.DisplayFor(modelItem => {variableName}.{fieldNameCapitalize})</td>"
       }
+    },
+    "listAction": {
+      "mine": "",
+      "thymeleaf": "\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<a th:href=\"@{'/{variableName}s/' + ${{variableName}.{pkFieldName}}}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t<a th:href=\"@{'/{variableName}s/delete/' + ${{variableName}.{pkFieldName}}}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t</td>",
+      "razor": "\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a asp-action=\"Edit\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t\t<a asp-action=\"Delete\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t\t</td>"
+    },
+    "packagingCase": {
+      "thymeleaf": "LOWER",
+      "razor": "UPPER",
+      "mine": "LOWER"
+    },
+    "description": {
+      "list": "Liste des {typeFieldName}s",
+      "create": "Nouvelle {typeFieldName}",
+      "update": "Modifier le {typeFieldName}"
+    },
+    "pageImport": {
+      "thymeleaf": "",
+      "razor": "@using {modelPackage}",
+      "mine": ""
     }
   },
   "inputMapping": {
@@ -39,6 +120,6 @@
     "time": "time",
     "datetime": "datetime-local",
     "timestamp": "date-time-local",
-    "bool": "boolean"
+    "bool": "checkbox"
   }
 }

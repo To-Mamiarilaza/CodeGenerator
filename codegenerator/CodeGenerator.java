@@ -113,15 +113,16 @@ public class CodeGenerator {
 
     public void resolveDependencyImport(Model model) throws Exception {
         List<Column> fKColumns = model.getTable().getForeignKeyColumns();
-        String oldImport = "";  // for managing import redondence
+        String oldImport = ""; // for managing import redondence
 
         for (Column column : fKColumns) {
             Model referencedModel = getModelWithName(column.getForeignKey().getTableName());
             if (referencedModel != null) {
                 String importDeclaration = Model.getModelData().get("imports").getAsJsonObject()
                         .get(model.getLanguage()).getAsString();
-                
-                String importMethod = Model.getModelData().get("importMethod").getAsJsonObject().get(model.getLanguage()).getAsString();
+
+                String importMethod = Model.getModelData().get("importMethod").getAsJsonObject()
+                        .get(model.getLanguage()).getAsString();
                 String typeImport = referencedModel.getPackageName();
                 if (importMethod.equals("WITH TYPE")) {
                     typeImport += "." + referencedModel.getClassName();
@@ -130,11 +131,12 @@ public class CodeGenerator {
                 // avoid redondancies
                 if (oldImport.contains(typeImport)) {
                     model.setTemplateContent(CodeFormatter.removeContainingLine("#import-" + model.getClassName() + "#",
-                        model.getTemplateContent()));
+                            model.getTemplateContent()));
                 } else {
                     importDeclaration = importDeclaration.replace("{type}", typeImport);
                     model.setTemplateContent(
-                            model.getTemplateContent().replace("#import-" + referencedModel.getClassName() + "#", importDeclaration));
+                            model.getTemplateContent().replace("#import-" + referencedModel.getClassName() + "#",
+                                    importDeclaration));
                     oldImport += "-" + typeImport;
                 }
 
@@ -224,15 +226,16 @@ public class CodeGenerator {
 
     public void checkFrameworkCompatibility(String language, String framework) throws Exception {
         String frameworkList = Controller.getControllerData()
-                    .get("frameworkCompatibility")
-                    .getAsJsonObject().get(language).getAsJsonArray().toString();
+                .get("frameworkCompatibility")
+                .getAsJsonObject().get(language).getAsJsonArray().toString();
 
         if (!frameworkList.contains(framework)) {
             throw new Exception("Le framework et le language que vous entrer n'est pas compatible !");
         }
     }
 
-    public void generateController(String language, String framework, String DAO, String outputPath, JsonObject controllerConfig) throws Exception {
+    public void generateController(String language, String framework, String DAO, String outputPath,
+            JsonObject controllerConfig) throws Exception {
         // check if the given framework exist and supported
         checkFrameworkExistence(framework);
         checkFrameworkCompatibility(language, framework);
@@ -241,7 +244,7 @@ public class CodeGenerator {
         String dbServicePackage = controllerConfig.get("dbServicePackage").getAsString();
 
         JsonArray tableArray = controllerConfig.get("tables").getAsJsonArray();
-        for (JsonElement jsonElement : tableArray) {    
+        for (JsonElement jsonElement : tableArray) {
             JsonObject controllerParameter = jsonElement.getAsJsonObject();
 
             // if generating all tables
@@ -254,7 +257,8 @@ public class CodeGenerator {
                     System.out.print("- " + table.getName() + " : ");
                     Model model = getModelWithName(table.getName());
 
-                    Controller controller = new Controller(model, language, framework, type, DAO, packageName, requestMapping, outputPath, dbServicePackage);
+                    Controller controller = new Controller(model, language, framework, type, DAO, packageName,
+                            requestMapping, outputPath, dbServicePackage);
                     controller.loadTemplate();
                     controller.generate();
 
@@ -270,7 +274,8 @@ public class CodeGenerator {
                 if (targetTable != null) {
                     Model model = getModelWithName(targetTable.getName());
 
-                    Controller controller = new Controller(model, language, framework, type, DAO, packageName, requestMapping, outputPath, dbServicePackage);
+                    Controller controller = new Controller(model, language, framework, type, DAO, packageName,
+                            requestMapping, outputPath, dbServicePackage);
                     controller.loadTemplate();
                     controller.generate();
 
@@ -280,10 +285,49 @@ public class CodeGenerator {
                 }
             }
         }
-
     }
 
+    public void generateView(JsonObject viewConfig, String outputPath, JsonObject data) throws Exception {
+        String viewChoice = viewConfig.get("choice").getAsString();
+        String viewPackage = viewConfig.get("package").getAsString();
 
+        JsonArray tableArray = viewConfig.get("tables").getAsJsonArray();
+
+        for (JsonElement jsonElement : tableArray) {
+            JsonObject viewParameter = jsonElement.getAsJsonObject();
+
+            // if generating all tables
+            if (viewParameter.get("name").getAsString().equals("*")) {
+                List<Table> targetTables = getDatabaseInformation().getTables();
+                for (Table table : targetTables) {
+                    System.out.print("- " + table.getName() + " : ");
+                    Model model = getModelWithName(table.getName());
+
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data);
+                    view.loadTemplate();
+                    view.generate();
+
+                    System.out.println("OK");
+                }
+            } else {
+                String tableName = viewParameter.get("name").getAsString();
+                Table targetTable = getDatabaseInformation().getTableWithName(tableName);
+                System.out.print("- " + tableName + " : ");
+
+                if (targetTable != null) {
+                    Model model = getModelWithName(targetTable.getName());
+
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data);
+                    view.loadTemplate();
+                    view.generate();
+
+                    System.out.println("OK");
+                } else {
+                    System.out.println("ECHOUE");
+                }
+            }
+        }
+    }
 
     public void init(String configFilePath, String action) throws Exception {
         // Clear console first
@@ -306,26 +350,17 @@ public class CodeGenerator {
             DAO = DAOElement.getAsString();
         }
 
-        if (action.equals("model")) {
-            System.out.println("GENERATION CODE MODEL");
-            generateModel(language, DAO, outputPath, config.get("model").getAsJsonObject());
+        // Generation des code
+        System.out.println("GENERATION CODE MODEL");
+        generateModel(language, DAO, outputPath, config.get("model").getAsJsonObject());
 
+        System.out.println("\nGENERATION CODE CONTROLLER");
+        generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
 
-            System.out.println("\nGENERATION CODE CONTROLLER");
-            generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
-        } else if (action.equals("controller")) {
-            System.out.println("GENERATION CODE CONTROLLER");
+        System.out.println("\nGENERATION CODE VIEW");
+        JsonObject data = JsonUtil.toJsonObject("./data/view.json");
+        generateView(config.get("view").getAsJsonObject(), outputPath, data);
 
-        } else if (action.equals("view")) {
-            System.out.println("GENERATION CODE VIEW");
-            JsonObject data = JsonUtil.toJsonObject("./data/view.json");
-            for (Table t : getDatabaseInformation().getTables()) {
-                View view = new View(t, config.get("view").getAsJsonObject().get("choice").getAsString(), outputPath, data);
-                view.generate();
-            }
-        } else {
-            throw new Exception("L' action que vous mentionner n' est pas correct !");
-        }
     }
 
     public static void main(String[] args) throws Exception {
