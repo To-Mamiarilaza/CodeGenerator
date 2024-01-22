@@ -313,6 +313,6 @@ public class Model {
     }
 
     public static JsonObject getModelData() throws Exception {
-        return JsonUtil.toJsonObject("./data/model.json");
+        return JsonUtil.toJsonObject("/data/model.json", "IN");
     }
 }

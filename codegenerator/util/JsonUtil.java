@@ -14,9 +14,16 @@ import com.google.gson.JsonParser;
 public class JsonUtil {
     
     // formating a json file to a json object
-    public static JsonObject toJsonObject(String filePath) throws Exception {
-        String content = FileUtil.toString(filePath);
+    public static JsonObject toJsonObject(String filePath, String source) throws Exception {
+        String content;
+        if (source.equals("IN")) {
+            content = FileUtil.toStringInnerFile(filePath);
+        } else {
+            content = FileUtil.toString(filePath);
+        }
+        
         JsonParser parser = new JsonParser();
         return parser.parse(content).getAsJsonObject();
     }
+
 }

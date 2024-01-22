@@ -625,6 +625,6 @@ public class Controller {
     }
 
     public static JsonObject getControllerData() throws Exception {
-        return JsonUtil.toJsonObject("./data/controller.json");
+        return JsonUtil.toJsonObject("/data/controller.json", "IN");
     }
 }

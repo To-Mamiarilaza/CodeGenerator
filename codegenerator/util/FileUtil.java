@@ -4,9 +4,12 @@
  */
 package codegenerator.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,10 +22,28 @@ public class FileUtil {
     // get the file content to a string
     public static String toString(String filePath) throws Exception {
         Path path = Paths.get(filePath);
-        String content =  new String(Files.readAllBytes(path));
+        String content = new String(Files.readAllBytes(path));
         return content;
     }
-    
+
+    // get the file inner the jar
+    public static String toStringInnerFile(String filePath) throws IOException {
+        try (InputStream inputStream = FileUtil.class.getResourceAsStream(filePath);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+
+            // Lisez le fichier ligne par ligne
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line);
+            }
+
+            return content.toString();
+        } catch (IOException e) {
+            throw e;
+        }
+    }
+
     // create a file with a content
     public static void createFileWithContent(String content, String destinationPath, String fileName) {
         try {

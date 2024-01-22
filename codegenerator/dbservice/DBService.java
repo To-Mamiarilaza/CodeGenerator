@@ -143,7 +143,7 @@ public class DBService {
     }
 
     public static JsonObject getDBServiceData() throws Exception {
-        return JsonUtil.toJsonObject("./data/DBService.json");
+        return JsonUtil.toJsonObject("/data/DBService.json", "IN");
     }
     
 

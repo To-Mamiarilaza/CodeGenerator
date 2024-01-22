@@ -145,18 +145,13 @@ public class DatabaseInformation {
     }
     
     public static JsonObject getDatabaseData() throws Exception {
-        return JsonUtil.toJsonObject("./data/database.json");
+        return JsonUtil.toJsonObject("/data/database.json", "IN");
     }
 
     public Connection getConnection() throws Exception {
         String urlPrefix = getDatabaseData().get("information").getAsJsonObject().get(this.type).getAsJsonObject().get("urlPrefix").getAsString();
         Connection connection = DriverManager.getConnection("jdbc:" + urlPrefix + "://localhost:5432/" + this.getName(), this.getUser(), this.getPassword());
         return connection;
-    }
-
-    public static void main(String[] args) throws Exception {
-        DatabaseInformation databaseInformation = new DatabaseInformation("fiche_employe", "localhost", "postgres", "postgres", "postgresql");
-        databaseInformation.fetchInformations();
     }
 
 }

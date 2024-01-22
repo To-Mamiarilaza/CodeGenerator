@@ -4,7 +4,10 @@
  */
 package codegenerator;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -329,12 +332,12 @@ public class CodeGenerator {
         }
     }
 
-    public void init(String configFilePath, String action) throws Exception {
+    public void init(String configFilePath) throws Exception {
         // Clear console first
         System.out.print("\033[H\033[2J");
         System.out.flush();
 
-        JsonObject config = JsonUtil.toJsonObject(configFilePath);
+        JsonObject config = JsonUtil.toJsonObject(configFilePath, "OUT");
         setDatabaseInformation(config.get("database").getAsJsonObject());
 
         // remove outputPath if exist
@@ -358,7 +361,7 @@ public class CodeGenerator {
         generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
 
         System.out.println("\nGENERATION CODE VIEW");
-        JsonObject data = JsonUtil.toJsonObject("./data/view.json");
+        JsonObject data = JsonUtil.toJsonObject("/data/view.json", "IN");
         generateView(config.get("view").getAsJsonObject(), outputPath, data);
 
     }
@@ -369,12 +372,11 @@ public class CodeGenerator {
 
         try {
             String configPathChecking = args[0];
-            String actionChecking = args[1];
         } catch (Exception e) {
             throw new Exception(
-                    "Vous devez mentionner les arguments suivant : \n1. Path du fichier de configuration\n2. Action a effectuer");
+                    "Vous devez mentionner le path du fichier de configuration !");
         }
-        codeGenerator.init(args[0], args[1]);
+        codeGenerator.init(args[0]);
     }
 
 }
