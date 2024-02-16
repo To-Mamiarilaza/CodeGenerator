@@ -75,6 +75,16 @@
             "MVC": "private readonly {dbServiceType} _{dbServiceFieldName};"
         }
     },
+    "FKEntityStateParameter": {
+        "spring": {
+            "REST": null,
+            "MVC": null
+        },
+        ".net": {
+            "REST": "_{dbServiceFieldName}.Entry({typeFieldName}.{fkField}).State = EntityState.Unchanged;",
+            "MVC": null
+        }
+    },
     "constructor": {
         "spring": {
             "REST": null,
@@ -123,8 +133,8 @@
                     "MVC": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}/{typeFieldName}s\";"
                 },
                 ".net": {
-                    "REST": "return await _{dbServiceFieldName}.{type}s.ToListAsync();",
-                    "MVC": "return View(await _{dbServiceFieldName}.{type}s.ToListAsync());"
+                    "REST": "return await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync();",
+                    "MVC": "return View(await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync());"
                 }
             }
         },
@@ -165,8 +175,8 @@
                     "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
                 },
                 ".net": {
-                    "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
-                    "MVC":"if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync(id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\nreturn View(\"{type}Form\", {typeFieldName});"
+                    "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == {lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
+                    "MVC":"if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\nreturn View(\"{type}Form\", {typeFieldName});"
                 }
             }
         },
@@ -207,7 +217,7 @@
                     "MVC": "{type} {typeFieldName} = new {type}();\n\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";"
                 },
                 ".net": {
-                    "REST": "_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
+                    "REST": "{FKEntityStateParameters}_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
                     "MVC":"return View(\"{type}Form\");"
                 }
             }
@@ -249,7 +259,7 @@
                     "MVC": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
                 },
                 ".net": {
-                    "REST": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
+                    "REST": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n{FKEntityStateParameters}_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
                     "MVC":"try\n {\n _{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\nreturn RedirectToAction(nameof(Index));\n;"
                 }
             }

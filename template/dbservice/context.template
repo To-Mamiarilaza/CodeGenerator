@@ -2,11 +2,11 @@
 
 #imports#
 
-public class {type}Context : DbContext
+public class DatabaseContext : DbContext
 {
-    public {type}Context(DbContextOptions<{type}Context> options) : base(options)
+    public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
     {
     }
 
-    public DbSet<{type}> {type}s { get; set; }
+    #dbSetsDeclarations#
 }

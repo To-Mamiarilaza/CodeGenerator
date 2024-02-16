@@ -9,6 +9,16 @@
         "repository": ["org.springframework.data.jpa.repository.JpaRepository", "org.springframework.stereotype.Repository"],
         "context": ["Microsoft.EntityFrameworkCore"]
     },
+    "DBServiceType": {
+        "repository": "INDIVIDUAL",
+        "context": "GLOBAL"
+    },
+    "DefaultClassName": {
+        "context": "DatabaseContext"
+    },
+    "DBSetsDeclarations": {
+        "context": "public DbSet<{type}> {type}s { get; set; }"
+    },
     "fieldName": {
         "repository": "{fieldName}",
         "context": "context"

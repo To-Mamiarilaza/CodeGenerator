@@ -10,6 +10,9 @@ import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
 import codegenerator.util.JsonUtil;
 import codegenerator.util.WordFormatter;
+
+import java.util.List;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -163,7 +166,11 @@ public class Model {
             if (column.getForeignKey() != null) {
                 type = WordFormatter
                         .capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+
                 fieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+                if (fieldCase.equals("UPPER")) {
+                    fieldName = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+                }
             }
 
             // managing field annotation
@@ -197,11 +204,20 @@ public class Model {
                             column.getForeignKey().getColumnName());
 
                     customFieldsDeclaration = customFieldsDeclaration.replace("{FKAnnotation}", foreignKeyAnnotation);
+
+                    // removing column name delcaration
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{ColumnMappingAnnotation}", "");
                 } else {
-                    // for single annotation
+                    // for single annotation or integrated annotation
                     customFieldsDeclaration = customFieldsDeclaration.replace("{FKAnnotation}\n", "");
-                    // for integrated annotation
                     customFieldsDeclaration = customFieldsDeclaration.replace("{FKAnnotation}", "");
+
+                    // add column mapping annotation
+                    String columnMapping = getModelData().get("ColumnMappingAnnotations").getAsJsonObject()
+                            .get(getDAO()).getAsString();
+                    columnMapping = columnMapping.replace("{columnName}", column.getName());
+                    customFieldsDeclaration = customFieldsDeclaration.replace("{ColumnMappingAnnotation}",
+                            columnMapping);
                 }
 
                 // add an espacement for structuring
@@ -225,9 +241,9 @@ public class Model {
 
     public String getClassName() {
         String className = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(getTable().getName()));
-        if (className.endsWith("s")) {
-            className = className.substring(0, className.length() - 1);
-        }
+        // if (className.endsWith("s")) {
+        //     className = className.substring(0, className.length() - 1);
+        // }
         return className;
     }
 

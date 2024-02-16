@@ -39,6 +39,7 @@ public class CodeGenerator {
 
     DatabaseInformation databaseInformation;
     List<Model> models = new ArrayList<>();
+    DBService globalDbService;
 
     public DatabaseInformation getDatabaseInformation() {
         return databaseInformation;
@@ -54,6 +55,14 @@ public class CodeGenerator {
 
     public void setModels(List<Model> models) {
         this.models = models;
+    }
+
+    public DBService getGlobalDbService() {
+        return globalDbService;
+    }
+
+    public void setGlobalDbService(DBService globalDbService) {
+        this.globalDbService = globalDbService;
     }
 
     // find model with given name
@@ -133,8 +142,8 @@ public class CodeGenerator {
 
                 // avoid redondancies
                 if (oldImport.contains(typeImport)) {
-                    model.setTemplateContent(CodeFormatter.removeContainingLine("#import-" + model.getClassName() + "#",
-                            model.getTemplateContent()));
+                    model.setTemplateContent(CodeFormatter.removeContainingLine("#import-" + referencedModel.getClassName() + "#",
+                    model.getTemplateContent()));
                 } else {
                     importDeclaration = importDeclaration.replace("{type}", typeImport);
                     model.setTemplateContent(
@@ -237,6 +246,20 @@ public class CodeGenerator {
         }
     }
 
+    public void generateGlobalDatabaseService(JsonElement dbServiceElement, String dbServicePackage, String outputPath, String language) throws Exception {
+        if (!dbServiceElement.isJsonNull()) {
+            String dbServiceType = DBService.getDBServiceData().get("DBServiceType").getAsJsonObject().get(dbServiceElement.getAsString()).getAsString();
+            if (dbServiceType.equals("GLOBAL")) {
+                DBService dbService = new DBService(getModels(), dbServiceElement.getAsString(), dbServicePackage, outputPath, language);
+                dbService.loadTemplate();
+                dbService.generate();
+        
+                setGlobalDbService(dbService);
+            }
+        }
+
+    }
+
     public void generateController(String language, String framework, String DAO, String outputPath,
             JsonObject controllerConfig) throws Exception {
         // check if the given framework exist and supported
@@ -247,6 +270,11 @@ public class CodeGenerator {
         String dbServicePackage = controllerConfig.get("dbServicePackage").getAsString();
 
         JsonArray tableArray = controllerConfig.get("tables").getAsJsonArray();
+
+        // generate global db service if type is global
+        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject().get(DAO);
+        generateGlobalDatabaseService(dbServiceElement, dbServicePackage, outputPath, language);
+
         for (JsonElement jsonElement : tableArray) {
             JsonObject controllerParameter = jsonElement.getAsJsonObject();
 
@@ -262,6 +290,10 @@ public class CodeGenerator {
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
                             requestMapping, outputPath, dbServicePackage);
+
+                    // if we need global db service
+                    controller.setDbService(globalDbService);
+
                     controller.loadTemplate();
                     controller.generate();
 
@@ -279,6 +311,10 @@ public class CodeGenerator {
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
                             requestMapping, outputPath, dbServicePackage);
+                    
+                    // if we need global db service
+                    controller.setDbService(globalDbService);
+
                     controller.loadTemplate();
                     controller.generate();
 
