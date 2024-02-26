@@ -1,5 +1,7 @@
 {
-    "outputPath": "./Thymeleaf",
+    "projectName": "Thymeleaf",
+    "withBaseProject": true,
+    "outputPath": ".",
     "database": {
         "type": "postgresql",
         "database": "fiche_employe",

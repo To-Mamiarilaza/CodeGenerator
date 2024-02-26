@@ -12,6 +12,7 @@
 - Simplifier le plus que possible les paramètres
 - Changement en service des fonctions JPA
 - On doit trouver une autre manière de coordonner les models, views, controller, sns pour faciliter leurs relations
+- Catch the main exception output 
 
 ### Changement non assurées :
 - J'ai enlevé le "\n" dans le DAOAnnotations / fields pour enlever l'espacement dans le code
@@ -21,3 +22,9 @@
 - Generation d'un controller avec un foreign key vers un model non généré
 - Toutes les repository doivent se placer dans un meme package pour le moment ( Problème au niveau de l'import controller )
 - Affichage si valeur null ou si valeur foreign key null, ( Problème au niveau du select list, l'elements selectionné ne s'affiche plus pour .net)
+
+### Generation du projet de base :
+#### SPRING :
+1. Terminal : "mvn archetype:generate -DgroupId=mg.mamiarilaza -DartifactId=demo -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false"
+2. Update pom.xml
+3. Build with : "mvn clean install"

@@ -20,6 +20,8 @@ import codegenerator.controller.Controller;
 import codegenerator.database.*;
 import codegenerator.dbservice.DBService;
 import codegenerator.model.*;
+import codegenerator.project.generator.ProjectBaseGenerator;
+import codegenerator.project.generator.SpringBaseGenerator;
 import codegenerator.util.CLIUtil;
 import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
@@ -377,8 +379,8 @@ public class CodeGenerator {
         setDatabaseInformation(config.get("database").getAsJsonObject());
 
         // remove outputPath if exist , not required
-        String outputPath = config.get("outputPath").getAsString();
-        // FileUtil.removeDirectory(new File(outputPath));
+        String projectName = config.get("projectName").getAsString();
+        String outputPath = config.get("outputPath").getAsString() + "/" + projectName;
 
         String language = config.get("language").getAsString();
         String framework = config.get("framework").getAsString();
@@ -389,16 +391,33 @@ public class CodeGenerator {
             DAO = DAOElement.getAsString();
         }
 
+        // Generation du projet de base
+        Boolean generateProjectBase = config.get("withBaseProject").getAsBoolean();
+        if (generateProjectBase) {
+            ProjectBaseGenerator projectBaseGenerator = null;
+
+            switch (framework) {
+                case "spring":
+                    projectBaseGenerator = new SpringBaseGenerator();
+                case ".net":
+                    projectBaseGenerator = new SpringBaseGenerator();
+                default:
+                    break;
+            }
+
+            projectBaseGenerator.generate(config);
+        }
+
         // Generation des code
-        System.out.println("GENERATION CODE MODEL");
-        generateModel(language, DAO, outputPath, config.get("model").getAsJsonObject());
+        // System.out.println("GENERATION CODE MODEL");
+        // generateModel(language, DAO, outputPath, config.get("model").getAsJsonObject());
 
-        System.out.println("\nGENERATION CODE CONTROLLER");
-        generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
+        // System.out.println("\nGENERATION CODE CONTROLLER");
+        // generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
 
-        System.out.println("\nGENERATION CODE VIEW");
-        JsonObject data = JsonUtil.toJsonObject("/data/view.json", "IN");
-        generateView(config.get("view").getAsJsonObject(), outputPath, data);
+        // System.out.println("\nGENERATION CODE VIEW");
+        // JsonObject data = JsonUtil.toJsonObject("/data/view.json", "IN");
+        // generateView(config.get("view").getAsJsonObject(), outputPath, data);
 
     }
 
