@@ -2,13 +2,13 @@
 namespace Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Data;
 
-[ApiController]
-[Route("/fiches")]
-public class FicheController : ControllerBase {
+
+public class FicheController : Controller {
     
     private readonly DatabaseContext _context;
     
@@ -16,54 +16,52 @@ public class FicheController : ControllerBase {
         _context = context;
     }
     
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Fiche>>> GetAllFiches() {
-        return await _context.Fiches.ToListAsync();
+    public async Task<IActionResult> Index() {
+        return View(await _context.Fiches.ToListAsync());
     }
     
-    [HttpGet("{idFiche}")]
-    public async Task<ActionResult<Fiche>> GetFicheById(int idFiche) {
-        var fiche = await _context.Fiches.FirstOrDefaultAsync(f => f.IdFiche == idFiche);
-        
-        if(fiche == null) {
+    public async Task<IActionResult> Edit(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var fiche = await _context.Fiches.FirstOrDefaultAsync(f => f.IdFiche == id);
+        if(fiche == null)
+        {
             return NotFound();
         }
         
-        return fiche;
+        return View("FicheForm", fiche);
+    }
+    
+    public IActionResult Create() {
+        return View("FicheForm");
     }
     
     [HttpPost]
-    public async Task<ActionResult<Fiche>> CreateFiche(Fiche fiche) {
-        _context.Fiches.Add(fiche);
-        await _context.SaveChangesAsync();
-        
-        return CreatedAtAction(nameof(GetFicheById), new { idFiche = fiche.IdFiche }, fiche);
-    }
-    
-    [HttpPut("{idFiche}")]
-    public async Task<IActionResult> UpdateFiche(int idFiche, Fiche fiche) {
-        if (idFiche != fiche.IdFiche)
-        {
-            return BadRequest();
-        }
-        
-        _context.Entry(fiche).State = EntityState.Modified;
-        
+    public async Task<IActionResult> Update(Fiche fiche) {
         try
         {
+            _context.Update(fiche);
             await _context.SaveChangesAsync();
         }
-        catch(DbUpdateConcurrencyException)
+        catch(Exception e)
         {
-            throw;
+            ViewData["ErrorMessage"] = e.InnerException.Message;
+            return View("FicheForm", fiche);
         }
-        
-        return NoContent();
+        return RedirectToAction(nameof(Index));
+        ;
     }
     
-    [HttpDelete("{idFiche}")]
-    public async Task<IActionResult> DeleteFiche(int idFiche) {
-        var fiche = await _context.Fiches.FindAsync(idFiche);
+    public async Task<IActionResult> Delete(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        
+        var fiche = await _context.Fiches.FindAsync(id);
+        
         if (fiche == null)
         {
             return NotFound();
@@ -72,7 +70,7 @@ public class FicheController : ControllerBase {
         _context.Fiches.Remove(fiche);
         await _context.SaveChangesAsync();
         
-        return NoContent();
+        return RedirectToAction(nameof(Index));
     }
     
 }

@@ -2,13 +2,13 @@
 namespace Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Data;
 
-[ApiController]
-[Route("/tutorials")]
-public class TutorialsController : ControllerBase {
+
+public class TutorialsController : Controller {
     
     private readonly DatabaseContext _context;
     
@@ -16,54 +16,52 @@ public class TutorialsController : ControllerBase {
         _context = context;
     }
     
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Tutorials>>> GetAllTutorialss() {
-        return await _context.Tutorialss.ToListAsync();
+    public async Task<IActionResult> Index() {
+        return View(await _context.Tutorialss.ToListAsync());
     }
     
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Tutorials>> GetTutorialsById(int id) {
+    public async Task<IActionResult> Edit(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
         var tutorials = await _context.Tutorialss.FirstOrDefaultAsync(t => t.Id == id);
-        
-        if(tutorials == null) {
+        if(tutorials == null)
+        {
             return NotFound();
         }
         
-        return tutorials;
+        return View("TutorialsForm", tutorials);
+    }
+    
+    public IActionResult Create() {
+        return View("TutorialsForm");
     }
     
     [HttpPost]
-    public async Task<ActionResult<Tutorials>> CreateTutorials(Tutorials tutorials) {
-        _context.Tutorialss.Add(tutorials);
-        await _context.SaveChangesAsync();
-        
-        return CreatedAtAction(nameof(GetTutorialsById), new { id = tutorials.Id }, tutorials);
-    }
-    
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTutorials(int id, Tutorials tutorials) {
-        if (id != tutorials.Id)
-        {
-            return BadRequest();
-        }
-        
-        _context.Entry(tutorials).State = EntityState.Modified;
-        
+    public async Task<IActionResult> Update(Tutorials tutorials) {
         try
         {
+            _context.Update(tutorials);
             await _context.SaveChangesAsync();
         }
-        catch(DbUpdateConcurrencyException)
+        catch(Exception e)
         {
-            throw;
+            ViewData["ErrorMessage"] = e.InnerException.Message;
+            return View("TutorialsForm", tutorials);
         }
-        
-        return NoContent();
+        return RedirectToAction(nameof(Index));
+        ;
     }
     
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTutorials(int id) {
+    public async Task<IActionResult> Delete(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        
         var tutorials = await _context.Tutorialss.FindAsync(id);
+        
         if (tutorials == null)
         {
             return NotFound();
@@ -72,7 +70,7 @@ public class TutorialsController : ControllerBase {
         _context.Tutorialss.Remove(tutorials);
         await _context.SaveChangesAsync();
         
-        return NoContent();
+        return RedirectToAction(nameof(Index));
     }
     
 }

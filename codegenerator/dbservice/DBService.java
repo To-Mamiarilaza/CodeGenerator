@@ -100,7 +100,7 @@ public class DBService {
     }
 
     /// Constructor for individual db service
-    public DBService(Model model, String className, String type, String packageName, String outputPath, String language) {
+    public DBService(Model model, String type, String packageName, String outputPath, String language) {
         this.model = model;
         this.className = model.getClassName() + WordFormatter.capitalizeFirstLetter(type);
         this.type = type;

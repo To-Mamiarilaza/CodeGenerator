@@ -247,6 +247,25 @@ public class Model {
         return className;
     }
 
+    // Attribut significative pour le model ( FK )
+    // First field with string type
+    public String getDisplayField() throws Exception {
+        for (Column column : getTable().getColumns()) {
+            if (column.getType().equals("varchar")) {
+                String fieldCase = Model.getModelData().get("fieldCase").getAsJsonObject().get(getLanguage()).getAsString();
+                String displayField = WordFormatter.toCamelCase(column.getName());
+                
+                if (fieldCase.equals("UPPER")) {
+                    displayField = WordFormatter.capitalizeFirstLetter(displayField);
+                }
+
+                return displayField;
+            }
+        }
+
+        return "";
+    }
+
     public String getImportsDeclaration() throws Exception {
         String imports = "";
         for (Column column : getTable().getColumns()) {

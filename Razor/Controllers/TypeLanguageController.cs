@@ -2,13 +2,13 @@
 namespace Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Data;
 
-[ApiController]
-[Route("/typeLanguages")]
-public class TypeLanguageController : ControllerBase {
+
+public class TypeLanguageController : Controller {
     
     private readonly DatabaseContext _context;
     
@@ -16,54 +16,52 @@ public class TypeLanguageController : ControllerBase {
         _context = context;
     }
     
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<TypeLanguage>>> GetAllTypeLanguages() {
-        return await _context.TypeLanguages.ToListAsync();
+    public async Task<IActionResult> Index() {
+        return View(await _context.TypeLanguages.ToListAsync());
     }
     
-    [HttpGet("{idTypeLanguage}")]
-    public async Task<ActionResult<TypeLanguage>> GetTypeLanguageById(int idTypeLanguage) {
-        var typeLanguage = await _context.TypeLanguages.FirstOrDefaultAsync(t => t.IdTypeLanguage == idTypeLanguage);
-        
-        if(typeLanguage == null) {
+    public async Task<IActionResult> Edit(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var typeLanguage = await _context.TypeLanguages.FirstOrDefaultAsync(t => t.IdTypeLanguage == id);
+        if(typeLanguage == null)
+        {
             return NotFound();
         }
         
-        return typeLanguage;
+        return View("TypeLanguageForm", typeLanguage);
+    }
+    
+    public IActionResult Create() {
+        return View("TypeLanguageForm");
     }
     
     [HttpPost]
-    public async Task<ActionResult<TypeLanguage>> CreateTypeLanguage(TypeLanguage typeLanguage) {
-        _context.TypeLanguages.Add(typeLanguage);
-        await _context.SaveChangesAsync();
-        
-        return CreatedAtAction(nameof(GetTypeLanguageById), new { idTypeLanguage = typeLanguage.IdTypeLanguage }, typeLanguage);
-    }
-    
-    [HttpPut("{idTypeLanguage}")]
-    public async Task<IActionResult> UpdateTypeLanguage(int idTypeLanguage, TypeLanguage typeLanguage) {
-        if (idTypeLanguage != typeLanguage.IdTypeLanguage)
-        {
-            return BadRequest();
-        }
-        
-        _context.Entry(typeLanguage).State = EntityState.Modified;
-        
+    public async Task<IActionResult> Update(TypeLanguage typeLanguage) {
         try
         {
+            _context.Update(typeLanguage);
             await _context.SaveChangesAsync();
         }
-        catch(DbUpdateConcurrencyException)
+        catch(Exception e)
         {
-            throw;
+            ViewData["ErrorMessage"] = e.InnerException.Message;
+            return View("TypeLanguageForm", typeLanguage);
         }
-        
-        return NoContent();
+        return RedirectToAction(nameof(Index));
+        ;
     }
     
-    [HttpDelete("{idTypeLanguage}")]
-    public async Task<IActionResult> DeleteTypeLanguage(int idTypeLanguage) {
-        var typeLanguage = await _context.TypeLanguages.FindAsync(idTypeLanguage);
+    public async Task<IActionResult> Delete(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        
+        var typeLanguage = await _context.TypeLanguages.FindAsync(id);
+        
         if (typeLanguage == null)
         {
             return NotFound();
@@ -72,7 +70,7 @@ public class TypeLanguageController : ControllerBase {
         _context.TypeLanguages.Remove(typeLanguage);
         await _context.SaveChangesAsync();
         
-        return NoContent();
+        return RedirectToAction(nameof(Index));
     }
     
 }

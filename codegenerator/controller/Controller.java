@@ -27,6 +27,7 @@ public class Controller {
     String dbServicePackage;
     String templateContent;
     DBService dbService;
+    CodeGenerator codeGenerator;
 
     /// Getter and setter
     public Model getModel() {
@@ -35,6 +36,14 @@ public class Controller {
 
     public void setModel(Model model) {
         this.model = model;
+    }
+
+    public CodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void setCodeGenerator(CodeGenerator codeGenerator) {
+        this.codeGenerator = codeGenerator;
     }
 
     public String getLanguage() {
@@ -119,7 +128,8 @@ public class Controller {
 
     /// Constructor
     public Controller(Model model, String language, String framework, String controllerType, String DAO,
-            String packageName, String requestMapping, String outputPath, String dbServicePackage) {
+            String packageName, String requestMapping, String outputPath, String dbServicePackage,
+            CodeGenerator codeGenerator) {
         this.model = model;
         this.language = language;
         this.framework = framework;
@@ -127,6 +137,7 @@ public class Controller {
         this.DAO = DAO;
         this.packageName = packageName;
         this.dbServicePackage = dbServicePackage;
+        this.codeGenerator = codeGenerator;
 
         if (requestMapping.equals("DEFAULT")) {
             requestMapping = WordFormatter.toCamelCase(getModel().getTable().getName());
@@ -164,8 +175,9 @@ public class Controller {
         }
 
         // Model import
-        String importMethod = getModel().getModelData().get("importMethod").getAsJsonObject().get(getModel().getLanguage()).getAsString();
-        
+        String importMethod = getModel().getModelData().get("importMethod").getAsJsonObject()
+                .get(getModel().getLanguage()).getAsString();
+
         String modelImport = importDeclaration;
         String type = getModel().getPackageName();
         if (importMethod.equals("WITH TYPE")) {
@@ -183,7 +195,24 @@ public class Controller {
                 dbServiceImportValue += "." + getDbService().getClassName();
             }
 
-            imports += dbServiceImport.replace("{type}", dbServiceImportValue);
+            imports += dbServiceImport.replace("{type}", dbServiceImportValue) + "\n";
+        }
+
+        // All other fk db service Imports
+        List<Column> columns = getModel().getTable().getForeignKeyColumns();
+        for (Column column : columns) {
+            String dbServiceImport = importDeclaration;
+
+            // Car les db service sont de même package et meme language
+            String dbServiceImportValue = getDbService().getPackageName();
+            if (importMethod.equals("WITH TYPE")) {
+                dbServiceImportValue += "." + getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getClassName() + WordFormatter.capitalizeFirstLetter(getDbService().getType());
+            }
+
+            // Avoid repetitions
+            if (!imports.contains(dbServiceImportValue)) {
+                imports += dbServiceImport.replace("{type}", dbServiceImportValue) + "\n";
+            }
         }
 
         // DAO imports requirements
@@ -209,55 +238,94 @@ public class Controller {
     }
 
     public void setExtendsRequirement() throws Exception {
-        String extendsDeclaration = Model.getModelData().get("extends").getAsJsonObject().get(getLanguage()).getAsString();
+        String extendsDeclaration = Model.getModelData().get("extends").getAsJsonObject().get(getLanguage())
+                .getAsString();
         JsonElement extendsRequirement = getControllerData().get("extendsRequirement").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject().get(getControllerType());
         if (extendsRequirement.isJsonNull()) {
             setTemplateContent(getTemplateContent().replace("#extends#", ""));
         } else {
-            setTemplateContent(getTemplateContent().replace("#extends#", extendsDeclaration.replace("{type}", extendsRequirement.getAsString())));
+            setTemplateContent(getTemplateContent().replace("#extends#",
+                    extendsDeclaration.replace("{type}", extendsRequirement.getAsString())));
         }
     }
 
-    public void setDbServiceAnnotation() throws Exception {
-        if (dbService == null) return;
-            
-        JsonElement dbServiceAnnotation = getControllerData().get("dbServiceAnnotation").getAsJsonObject()
-                .get(getFramework()).getAsJsonObject().get(getControllerType());
-        if (dbServiceAnnotation.isJsonNull()) {
-            setTemplateContent(CodeFormatter.removeContainingLine("#dbServiceAnnotation#", getTemplateContent()));
-        } else {
-            setTemplateContent(
-                    getTemplateContent().replace("#dbServiceAnnotation#", dbServiceAnnotation.getAsString()));
-        }
-    }
+    public void setDbServiceSections() throws Exception {
+        if (dbService == null)
+            return;
 
-    public void setDbServiceDeclaration() throws Exception {
-        if (dbService == null) return;
-            
-        JsonElement dbServiceDeclaration = getControllerData().get("dbServiceDeclaration").getAsJsonObject()
+        // The code results
+        String results = "";
+
+        // Getting DB Service Annotation
+        String dbServiceAnnotation = "";
+        JsonElement dbServiceAnnotationElement = getControllerData().get("dbServiceAnnotation").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject().get(getControllerType());
-        if (dbServiceDeclaration.isJsonNull()) {
-            setTemplateContent(CodeFormatter.removeContainingLine("#dbServiceDeclaration#", getTemplateContent()));
+        if (!dbServiceAnnotationElement.isJsonNull()) {
+            dbServiceAnnotation = dbServiceAnnotationElement.getAsString();
+        }
+
+        String dbServiceDeclaration = "";
+        JsonElement dbServiceDeclarationElement = getControllerData().get("dbServiceDeclaration").getAsJsonObject()
+                .get(getFramework()).getAsJsonObject().get(getControllerType());
+        if (!dbServiceDeclarationElement.isJsonNull()) {
+            dbServiceDeclaration = dbServiceDeclarationElement.getAsString();
+        }
+
+        if (!dbServiceAnnotation.equals(""))
+            results += dbServiceAnnotation + "\n";
+        if (!dbServiceDeclaration.equals(""))
+            results += dbServiceDeclaration.replace("{dbServiceType}", getDbService().getClassName())
+                    .replace("{dbServiceFieldName}", getDbService().getFieldName());
+        ;
+
+        // If using separated context we should add individual repository
+        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject()
+                .get(DAO);
+        String dbServiceType = DBService.getDBServiceData().get("DBServiceType").getAsJsonObject()
+                .get(dbServiceElement.getAsString()).getAsString();
+        if (dbServiceType.equals("INDIVIDUAL")) {
+            results += "\n";
+
+            List<Column> columns = getModel().getTable().getForeignKeyColumns();
+            for (Column column : columns) {
+                results += "\n";
+                DBService targetDbService = new DBService(
+                        getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()),
+                        dbServiceElement.getAsString(), null, getOutputPath(), getLanguage());
+
+                if (!dbServiceAnnotation.equals("")) {
+                    results += dbServiceAnnotation + "\n";
+                }
+
+                if (!dbServiceDeclaration.equals("")) {
+                    results += dbServiceDeclaration.replace("{dbServiceType}", targetDbService.getClassName())
+                            .replace("{dbServiceFieldName}", targetDbService.getFieldName()) + "\n";
+                }
+            }
+
+        }
+
+        if (results.equals("")) {
+            setTemplateContent(CodeFormatter.removeContainingLine("#dbServiceSections#", getTemplateContent()));
         } else {
-            setTemplateContent(getTemplateContent().replace("#dbServiceDeclaration#", dbServiceDeclaration.getAsString()
-                    .replace("{dbServiceType}", getDbService().getClassName())
-                    .replace("{dbServiceFieldName}", getDbService().getFieldName())));
+            setTemplateContent(getTemplateContent().replace("#dbServiceSections#", results));
         }
     }
 
     public void setConstructor() throws Exception {
-        if (getDbService() == null) return;
-            
+        if (getDbService() == null)
+            return;
+
         JsonElement constructor = getControllerData().get("constructor").getAsJsonObject().get(getFramework())
                 .getAsJsonObject().get(getControllerType());
         if (constructor.isJsonNull()) {
             setTemplateContent(CodeFormatter.removeContainingLine("#constructor#", getTemplateContent()));
         } else {
             setTemplateContent(getTemplateContent().replace("#constructor#", constructor.getAsString()
-                .replace("{controllerName}", getControllerName())
-                .replace("{dbServiceType}", getDbService().getClassName())
-                .replace("{dbServiceFieldName}", getDbService().getFieldName())));
+                    .replace("{controllerName}", getControllerName())
+                    .replace("{dbServiceType}", getDbService().getClassName())
+                    .replace("{dbServiceFieldName}", getDbService().getFieldName())));
         }
     }
 
@@ -284,7 +352,8 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#getAllReturnType#", getAllReturnType.getAsString().replace("{type}", getModel().getClassName())));
+        setTemplateContent(getTemplateContent().replace("#getAllReturnType#",
+                getAllReturnType.getAsString().replace("{type}", getModel().getClassName())));
     }
 
     public void setGetAllDeclaration() throws Exception {
@@ -295,7 +364,8 @@ public class Controller {
                 .get(getFramework()).getAsJsonObject()
                 .get(getControllerType());
 
-        setTemplateContent(getTemplateContent().replace("#getAllDeclaration#", getAllDeclaration.getAsString().replace("{type}", getModel().getClassName())));
+        setTemplateContent(getTemplateContent().replace("#getAllDeclaration#",
+                getAllDeclaration.getAsString().replace("{type}", getModel().getClassName())));
     }
 
     public String getFkIncludesDeclaration() throws Exception {
@@ -304,8 +374,9 @@ public class Controller {
 
         for (Column column : fKColumns) {
             String firstLowerName = WordFormatter.firstLetterToLower(getModel().getClassName()).substring(0, 1);
-            String typeName = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
-            fkIncludes += "Include(" + firstLowerName  + " => " + firstLowerName + "." + typeName  + ").";
+            String typeName = WordFormatter
+                    .capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+            fkIncludes += "Include(" + firstLowerName + " => " + firstLowerName + "." + typeName + ").";
         }
 
         return fkIncludes;
@@ -314,19 +385,46 @@ public class Controller {
     public String getFkEntityStateParameters() throws Exception {
         String parameters = "";
         JsonElement declarationElement = Controller.getControllerData().get("FKEntityStateParameter")
-        .getAsJsonObject().get(getFramework()).getAsJsonObject()
-        .get(getControllerType());
+                .getAsJsonObject().get(getFramework()).getAsJsonObject()
+                .get(getControllerType());
 
         if (!declarationElement.isJsonNull()) {
             String declaration = declarationElement.getAsString();
             List<Column> fKColumns = getModel().getTable().getForeignKeyColumns();
-            
+
             for (Column column : fKColumns) {
-                String typeName = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
+                String typeName = WordFormatter
+                        .capitalizeFirstLetter(WordFormatter.toCamelCase(column.getForeignKey().getTableName()));
                 parameters += declaration.replace("{dbServiceFieldName}", getDbService().getFieldName())
-                            .replace("{typeFieldName}", getModel().getFieldName())
-                            .replace("{fkField}", typeName) + "\n";
+                        .replace("{typeFieldName}", getModel().getFieldName())
+                        .replace("{fkField}", typeName) + "\n";
             }
+        }
+
+        return parameters;
+    }
+
+    public String getFkSelectOptions() throws Exception {
+        String parameters = "";
+        String dataPass = Controller.getControllerData().get("selectOptionsPassing")
+                .getAsJsonObject().get(getFramework()).getAsString();
+
+        List<Column> fKColumns = getModel().getTable().getForeignKeyColumns();
+
+        for (Column column : fKColumns) {
+            String typeFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            String pkFieldName = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getPrimaryKeyFieldName();
+            String fkDisplayField = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getDisplayField();
+
+            // set the field case
+            String fieldCase = Model.getModelData().get("fieldCase").getAsJsonObject().get(getLanguage()).getAsString();
+            if (fieldCase.equals("UPPER")) {
+                typeFieldName = WordFormatter.capitalizeFirstLetter(typeFieldName);
+            }
+
+            parameters += dataPass.replace("{typeFieldName}", typeFieldName)
+                                .replace("{pkFieldName}", pkFieldName)
+                                .replace("{fkDisplayField}", fkDisplayField) + "\n";
         }
 
         return parameters;
@@ -361,7 +459,8 @@ public class Controller {
             setTemplateContent(CodeFormatter.removeContainingLine("#getByIdAnnotation#", getTemplateContent()));
         } else {
             setTemplateContent(getTemplateContent().replace("#getByIdAnnotation#", getByIdAnnotation.getAsString())
-                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
+                    .replace("{lowerPkFieldName}",
+                            WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
         }
     }
 
@@ -412,8 +511,7 @@ public class Controller {
                 .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
                 .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
                 .replace("{objectFirstLetter}", firstLowerName)
-                .replace("{FKIncludes}", fkIncludes)
-        );
+                .replace("{FKIncludes}", fkIncludes));
 
     }
 
@@ -469,6 +567,9 @@ public class Controller {
         // Set foreign key entity state if needed
         String fkEntityStateParameters = getFkEntityStateParameters();
 
+        // Pass the fk options data
+        String fkSelectOptions = getFkSelectOptions();
+
         setTemplateContent(getTemplateContent().replace("#createContent#", createContent.getAsString()
                 .replace("{dbServiceFieldName}", getDbService().getFieldName())
                 .replace("{type}", getModel().getClassName())
@@ -476,7 +577,7 @@ public class Controller {
                 .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
                 .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
                 .replace("{FKEntityStateParameters}", fkEntityStateParameters)
-        ));
+                .replace("{FKSelectOptions}", fkSelectOptions)));
     }
 
     public void setUpdateAnnotation() throws Exception {
@@ -491,7 +592,8 @@ public class Controller {
             setTemplateContent(CodeFormatter.removeContainingLine("#updateAnnotation#", getTemplateContent()));
         } else {
             setTemplateContent(getTemplateContent().replace("#updateAnnotation#", updateAnnotation.getAsString())
-                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
+                    .replace("{lowerPkFieldName}",
+                            WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
         }
     }
 
@@ -534,6 +636,9 @@ public class Controller {
         // Set foreign key entity state if needed
         String fkEntityStateParameters = getFkEntityStateParameters();
 
+        // Pass the fk options data
+        String fkSelectOptions = getFkSelectOptions();
+
         setTemplateContent(getTemplateContent().replace("#updateContent#", updateContent.getAsString())
                 .replace("{typeFieldName}", getModel().getFieldName())
                 .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
@@ -542,7 +647,7 @@ public class Controller {
                 .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
                 .replace("{upperPkFieldName}", WordFormatter.capitalizeFirstLetter(getModel().getPrimaryKeyFieldName()))
                 .replace("{FKEntityStateParameters}", fkEntityStateParameters)
-        );
+                .replace("{FKSelectOptions}", fkSelectOptions));
     }
 
     public void setDeleteAnnotation() throws Exception {
@@ -557,7 +662,8 @@ public class Controller {
             setTemplateContent(CodeFormatter.removeContainingLine("#deleteAnnotation#", getTemplateContent()));
         } else {
             setTemplateContent(getTemplateContent().replace("#deleteAnnotation#", deleteAnnotation.getAsString())
-                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
+                    .replace("{lowerPkFieldName}",
+                            WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName())));
         }
     }
 
@@ -603,9 +709,11 @@ public class Controller {
     }
 
     public void executeDBServiceSetting() throws Exception {
-        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject().get(getDAO());
+        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject()
+                .get(getDAO());
         if (!dbServiceElement.isJsonNull()) {
-            DBService dbService = new DBService(getModel(), getDAO(), dbServiceElement.getAsString(), getDbServicePackage(), getOutputPath(), getModel().getLanguage());
+            DBService dbService = new DBService(getModel(), dbServiceElement.getAsString(),
+                    getDbServicePackage(), getOutputPath(), getModel().getLanguage());
             dbService.loadTemplate();
             dbService.generate();
             setDbService(dbService);
@@ -634,8 +742,7 @@ public class Controller {
 
         setExtendsRequirement();
 
-        setDbServiceAnnotation();
-        setDbServiceDeclaration();
+        setDbServiceSections();
 
         setConstructor();
 

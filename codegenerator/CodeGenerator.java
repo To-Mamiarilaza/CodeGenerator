@@ -65,7 +65,7 @@ public class CodeGenerator {
         this.globalDbService = globalDbService;
     }
 
-    // find model with given name
+    // find model with given table name
     public Model getModelWithName(String name) {
         for (Model model : models) {
             if (model.getTable().getName().equals(name)) {
@@ -246,7 +246,8 @@ public class CodeGenerator {
         }
     }
 
-    public void generateGlobalDatabaseService(JsonElement dbServiceElement, String dbServicePackage, String outputPath, String language) throws Exception {
+    public void generateGlobalDatabaseService(String dbServicePackage, String outputPath, String language, String DAO) throws Exception {
+        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject().get(DAO);
         if (!dbServiceElement.isJsonNull()) {
             String dbServiceType = DBService.getDBServiceData().get("DBServiceType").getAsJsonObject().get(dbServiceElement.getAsString()).getAsString();
             if (dbServiceType.equals("GLOBAL")) {
@@ -272,8 +273,7 @@ public class CodeGenerator {
         JsonArray tableArray = controllerConfig.get("tables").getAsJsonArray();
 
         // generate global db service if type is global
-        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject().get(DAO);
-        generateGlobalDatabaseService(dbServiceElement, dbServicePackage, outputPath, language);
+        generateGlobalDatabaseService(dbServicePackage, outputPath, language, DAO);
 
         for (JsonElement jsonElement : tableArray) {
             JsonObject controllerParameter = jsonElement.getAsJsonObject();
@@ -289,7 +289,7 @@ public class CodeGenerator {
                     Model model = getModelWithName(table.getName());
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
-                            requestMapping, outputPath, dbServicePackage);
+                            requestMapping, outputPath, dbServicePackage, this);
 
                     // if we need global db service
                     controller.setDbService(globalDbService);
@@ -310,7 +310,7 @@ public class CodeGenerator {
                     Model model = getModelWithName(targetTable.getName());
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
-                            requestMapping, outputPath, dbServicePackage);
+                            requestMapping, outputPath, dbServicePackage, this);
                     
                     // if we need global db service
                     controller.setDbService(globalDbService);
@@ -342,7 +342,7 @@ public class CodeGenerator {
                     System.out.print("- " + table.getName() + " : ");
                     Model model = getModelWithName(table.getName());
 
-                    View view = new View(model, viewChoice, viewPackage, outputPath, data);
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this);
                     view.loadTemplate();
                     view.generate();
 
@@ -356,7 +356,7 @@ public class CodeGenerator {
                 if (targetTable != null) {
                     Model model = getModelWithName(targetTable.getName());
 
-                    View view = new View(model, viewChoice, viewPackage, outputPath, data);
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this);
                     view.loadTemplate();
                     view.generate();
 

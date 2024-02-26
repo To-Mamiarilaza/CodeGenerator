@@ -31,6 +31,7 @@
             ],
             "MVC": [
                 "Microsoft.AspNetCore.Mvc",
+                "Microsoft.AspNetCore.Mvc.Rendering",
                 "Microsoft.EntityFrameworkCore"
             ]
         }
@@ -82,7 +83,7 @@
         },
         ".net": {
             "REST": "_{dbServiceFieldName}.Entry({typeFieldName}.{fkField}).State = EntityState.Unchanged;",
-            "MVC": null
+            "MVC": "_{dbServiceFieldName}.Entry({typeFieldName}.{fkField}).State = EntityState.Unchanged;"
         }
     },
     "constructor": {
@@ -94,6 +95,10 @@
             "REST": "public {controllerName}({dbServiceType} {dbServiceFieldName}) {\n_{dbServiceFieldName} = {dbServiceFieldName};\n}",
             "MVC": "public {controllerName}({dbServiceType} {dbServiceFieldName}) {\n_{dbServiceFieldName} = {dbServiceFieldName};\n}"
         }
+    },
+    "selectOptionsPassing": {
+        "spring": "model.addAttribute(\"{typeFieldName}s\", {typeFieldName}Repository.findAll());",
+        ".net": "ViewData[\"{typeFieldName}s\"] = new SelectList(_context.Set<{typeFieldName}>(), \"{pkFieldName}\", \"{fkDisplayField}\");"
     },
     "CRUDMethods": {
         "getAll": {
@@ -172,11 +177,11 @@
             "content": {
                 "spring": {
                     "REST": "Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({typeFieldName}Data.get(), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }",
-                    "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
+                    "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      {FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
                 },
                 ".net": {
                     "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == {lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
-                    "MVC":"if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\nreturn View(\"{type}Form\", {typeFieldName});"
+                    "MVC":"if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n{FKSelectOptions}return View(\"{type}Form\", {typeFieldName});"
                 }
             }
         },
@@ -214,11 +219,11 @@
             "content": {
                 "spring": {
                     "REST": "try {\n {type} _{typeFieldName} = {dbServiceFieldName}.save({typeFieldName});\n return new ResponseEntity<>(_{typeFieldName}, HttpStatus.CREATED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "{type} {typeFieldName} = new {type}();\n\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";"
+                    "MVC": "{type} {typeFieldName} = new {type}();\n\n{FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";"
                 },
                 ".net": {
                     "REST": "{FKEntityStateParameters}_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
-                    "MVC":"return View(\"{type}Form\");"
+                    "MVC":"{FKSelectOptions}return View(\"{type}Form\");"
                 }
             }
         },
@@ -246,7 +251,7 @@
             "declaration": {
                 "spring": {
                     "REST": "update{type}(@PathVariable {pkFieldType} {lowerPkFieldName}, @RequestBody {type} {typeFieldName})",
-                    "MVC": "save{type}({type} {typeFieldName}, RedirectAttributes redirectAttributes)"
+                    "MVC": "save{type}({type} {typeFieldName}, Model model)"
                 },
                 ".net": {
                     "REST": "Update{type}({pkFieldType} {lowerPkFieldName}, {type} {typeFieldName})",
@@ -256,11 +261,11 @@
             "content": {
                 "spring": {
                     "REST": "try{\n if ({lowerPkFieldName} != {typeFieldName}.get{upperPkFieldName}()) {\n return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);\n }\n Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({dbServiceFieldName}.save({typeFieldName}), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
+                    "MVC": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n{FKSelectOptions}model.addAttribute(\"errorMessage\", e.getMessage());\nmodel.addAttribute(\"pageTitle\", \"Update {typeFieldName}\");\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nreturn \"{typeFieldName}/{typeFieldName}_form\";\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
                 },
                 ".net": {
                     "REST": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n{FKEntityStateParameters}_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
-                    "MVC":"try\n {\n _{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\nreturn RedirectToAction(nameof(Index));\n;"
+                    "MVC":"try\n {\n {FKEntityStateParameters}_{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(Exception e)\n{\n{FKSelectOptions}ViewData[\"ErrorMessage\"] = e.InnerException.Message;\nreturn View(\"{type}Form\", {typeFieldName});\n}\nreturn RedirectToAction(nameof(Index));\n;"
                 }
             }
         },

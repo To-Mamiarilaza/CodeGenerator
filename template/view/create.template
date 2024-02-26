@@ -30,7 +30,7 @@
             <h4 class="text-white">#description#</h4>
             <div class="form">
                 <form action="#formAction#" method="post" #formRequirements# >
-                    <input type="hidden" #idHiddenInput# />#formInput#
+                    <input type="hidden" #idHiddenInput# />#formInput##errorDiv#
 
                     <div class="d-flex mt-4">
                         <button class="btn btn-outline-info px-5 me-3" type="submit">Enregistrer</button>

@@ -14,14 +14,14 @@
         "tables": [{"name": "*", "package": "Models"}]
     },
     "controller": {
-        "type": "REST",
+        "type": "MVC",
         "dbServicePackage": "Data",
         "tables": [{"name": "*", "package": "Controllers", "requestMapping": "DEFAULT"}]
     },
     "view": {
         "choice": "razor",
         "package": "Views" ,
-        "tables": []
+        "tables": [{"name": "*"}]
     }
 }
 

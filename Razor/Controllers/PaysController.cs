@@ -2,13 +2,13 @@
 namespace Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Data;
 
-[ApiController]
-[Route("/pays")]
-public class PaysController : ControllerBase {
+
+public class PaysController : Controller {
     
     private readonly DatabaseContext _context;
     
@@ -16,54 +16,52 @@ public class PaysController : ControllerBase {
         _context = context;
     }
     
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Pays>>> GetAllPayss() {
-        return await _context.Payss.ToListAsync();
+    public async Task<IActionResult> Index() {
+        return View(await _context.Payss.ToListAsync());
     }
     
-    [HttpGet("{idPays}")]
-    public async Task<ActionResult<Pays>> GetPaysById(int idPays) {
-        var pays = await _context.Payss.FirstOrDefaultAsync(p => p.IdPays == idPays);
-        
-        if(pays == null) {
+    public async Task<IActionResult> Edit(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        var pays = await _context.Payss.FirstOrDefaultAsync(p => p.IdPays == id);
+        if(pays == null)
+        {
             return NotFound();
         }
         
-        return pays;
+        return View("PaysForm", pays);
+    }
+    
+    public IActionResult Create() {
+        return View("PaysForm");
     }
     
     [HttpPost]
-    public async Task<ActionResult<Pays>> CreatePays(Pays pays) {
-        _context.Payss.Add(pays);
-        await _context.SaveChangesAsync();
-        
-        return CreatedAtAction(nameof(GetPaysById), new { idPays = pays.IdPays }, pays);
-    }
-    
-    [HttpPut("{idPays}")]
-    public async Task<IActionResult> UpdatePays(int idPays, Pays pays) {
-        if (idPays != pays.IdPays)
-        {
-            return BadRequest();
-        }
-        
-        _context.Entry(pays).State = EntityState.Modified;
-        
+    public async Task<IActionResult> Update(Pays pays) {
         try
         {
+            _context.Update(pays);
             await _context.SaveChangesAsync();
         }
-        catch(DbUpdateConcurrencyException)
+        catch(Exception e)
         {
-            throw;
+            ViewData["ErrorMessage"] = e.InnerException.Message;
+            return View("PaysForm", pays);
         }
-        
-        return NoContent();
+        return RedirectToAction(nameof(Index));
+        ;
     }
     
-    [HttpDelete("{idPays}")]
-    public async Task<IActionResult> DeletePays(int idPays) {
-        var pays = await _context.Payss.FindAsync(idPays);
+    public async Task<IActionResult> Delete(int? id) {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        
+        var pays = await _context.Payss.FindAsync(id);
+        
         if (pays == null)
         {
             return NotFound();
@@ -72,7 +70,7 @@ public class PaysController : ControllerBase {
         _context.Payss.Remove(pays);
         await _context.SaveChangesAsync();
         
-        return NoContent();
+        return RedirectToAction(nameof(Index));
     }
     
 }

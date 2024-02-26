@@ -25,18 +25,28 @@
             <span class="navbar-brand mb-0 h1 ms-5"><i class="fas fa-kiwi-bird me-4"></i>Lazy coding</span>
         </div>
     </nav>
-    <div class="container mt-4" data-bs-theme="dark">
-        <h4 class="text-white">#description#</h4>
-        <a class="btn btn-outline-secondary mt-3 px-4" href="#createNewLink#"><i class="fas fa-plus me-3"></i>#createNewDescription#</a>
-        <div class="mt-4">
-            <table class="table table-dark table-hover">
-                <thead>
-                    <tr>#tableHead#
-                    </tr>
-                </thead>
-                <tbody>#tableBody#
-                </tbody>
-            </table>
+    <div class="container row mt-4 ps-5" data-bs-theme="dark">
+
+        <div class="col-md-3">
+            <h5 class="text-muted">Liste des entités</h5>
+            <hr>
+            <div class="list-group list-group-flush">#linkList#
+            </div>
+        </div>
+
+        <div class="col-md-9 ps-5">
+            <h5 class="text-white">#description#</h5>
+            <a class="btn btn-outline-secondary mt-3 px-4" href="#createNewLink#"><i class="fas fa-plus me-3"></i>#createNewDescription#</a>
+            <div class="mt-4">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>#tableHead#
+                        </tr>
+                    </thead>
+                    <tbody>#tableBody#
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

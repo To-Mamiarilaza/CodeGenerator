@@ -1,0 +1,27 @@
+{
+    "outputPath": "./Thymeleaf",
+    "database": {
+        "type": "postgresql",
+        "database": "fiche_employe",
+        "host": "localhost",
+        "username": "postgres",
+        "password": "postgres"
+    },
+    "language": "JAVA",
+    "DAO": "JPA",
+    "framework": "spring",
+    "model": {
+        "tables": [{"name": "*", "package": "com.bezkoder.spring.thymeleaf.entity"}]
+    },
+    "controller": {
+        "type": "MVC",
+        "dbServicePackage": "com.bezkoder.spring.thymeleaf.repository",
+        "tables": [{"name": "*", "package": "com.bezkoder.spring.thymeleaf.controller", "requestMapping": "DEFAULT"}]
+    },
+    "view": {
+        "choice": "thymeleaf",
+        "package": "template" ,
+        "tables": [{"name": "*"}]
+    }
+}
+

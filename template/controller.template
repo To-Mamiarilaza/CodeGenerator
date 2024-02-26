@@ -5,8 +5,7 @@
 #classAnnotation#
 public class #className# #extends# {
 
-    #dbServiceAnnotation#
-    #dbServiceDeclaration#
+    #dbServiceSections#
 
     #constructor#
 

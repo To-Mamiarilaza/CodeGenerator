@@ -3,6 +3,7 @@ package codegenerator.view;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import codegenerator.CodeGenerator;
 import codegenerator.database.Column;
 import codegenerator.database.Table;
 import codegenerator.model.Model;
@@ -20,8 +21,10 @@ public class View {
     private String pageTitle;
     private String formAction;
     private String formInput;
+    private String errorDiv;
     private String tableHead;
     private String tableBody;
+    private String linkList;
     private JsonObject data;
     private String outputPath;
     private String pageImport;
@@ -29,8 +32,11 @@ public class View {
     private String listPageTemplateContent;
     private String createPageTemplateContent;
     private String updatePageTemplateContent;
+    private CodeGenerator codeGenerator; // For getting the FK model
 
-    public View(Model model, String choice, String viewPackage, String outputPath, JsonObject data) throws Exception {
+    public View(Model model, String choice, String viewPackage, String outputPath, JsonObject data,
+            CodeGenerator codeGenerator) throws Exception {
+        setCodeGenerator(codeGenerator);
         setModel(model);
         setTable(model.getTable());
         setChoice(choice);
@@ -45,6 +51,8 @@ public class View {
         setTableBody();
         setFormInput();
         setPageImport();
+        setErrorDiv();
+        setLinkList();
     }
 
     public Table getTable() {
@@ -53,6 +61,14 @@ public class View {
 
     public void setTable(Table table) {
         this.table = table;
+    }
+
+    public CodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void setCodeGenerator(CodeGenerator codeGenerator) {
+        this.codeGenerator = codeGenerator;
     }
 
     public Model getModel() {
@@ -134,21 +150,21 @@ public class View {
 
     public String getSelfPackaging() {
         String packagingCase = getData().get("page").getAsJsonObject().get("packagingCase").getAsJsonObject()
-        .get(getChoice()).getAsString();
+                .get(getChoice()).getAsString();
         String selfPackaging = getModel().getClassName();
         if (packagingCase.equals("LOWER")) {
             selfPackaging = WordFormatter.firstLetterToLower(selfPackaging);
         }
         return selfPackaging;
     }
- 
+
     public String getPageRequirement(String targetPage) {
         String pageRequirement = getData().get("page").getAsJsonObject().get("pageRequirement").getAsJsonObject()
                 .get(targetPage).getAsJsonObject()
                 .get(getChoice()).getAsString();
-        String className = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(getModel().getClassName()));
+        String className = WordFormatter.capitalizeFirstLetter(getModel().getClassName());
         pageRequirement = pageRequirement.replace("{className}", className);
-       
+
         return pageRequirement;
     }
 
@@ -163,6 +179,16 @@ public class View {
         this.htmlRequirement = htmlRequirement;
     }
 
+    public void setErrorDiv() {
+        String errorDiv = getData().get("page").getAsJsonObject().get("errorDiv").getAsJsonObject()
+        .get(getChoice()).getAsString();
+        this.errorDiv = errorDiv;
+    }
+
+    public String getErrorDiv() {
+        return errorDiv;
+    }
+
     public String getPageTitle() {
         return pageTitle;
     }
@@ -172,9 +198,30 @@ public class View {
         this.pageTitle = pageTitle;
     }
 
+    public void setLinkList() {
+        String linkList = "";
+
+        String linkListDeclaration = getData().get("page").getAsJsonObject().get("linkList").getAsJsonObject()
+        .get(getChoice()).getAsString();
+
+        for (Model model : getCodeGenerator().getModels()) {
+            linkList += linkListDeclaration.replace("{type}", model.getClassName())
+            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(model.getClassName()))
+            .replace(("{entityName}"), WordFormatter.toSpacedUpperCase(model.getTable().getName()));
+        }
+
+
+        this.linkList = linkList;
+    }
+
+    public String getLinkList() {
+        return linkList;
+    }
+
     public String getDescription(String targetPage) {
         String listDescription = getData().get("page").getAsJsonObject().get("description").getAsJsonObject()
-        .get(targetPage).getAsString().replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
+                .get(targetPage).getAsString()
+                .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
         return listDescription;
     }
 
@@ -183,10 +230,10 @@ public class View {
     }
 
     public void setFormAction() {
-        this.formAction =  getData().get("page").getAsJsonObject().get("updateLink")
-            .getAsJsonObject().get(getChoice()).getAsString()
-            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
-            .replace("{className}", getModel().getClassName());
+        this.formAction = getData().get("page").getAsJsonObject().get("updateLink")
+                .getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+                .replace("{className}", getModel().getClassName());
     }
 
     public String getFormInput() {
@@ -195,10 +242,29 @@ public class View {
 
     public void setFormInput() throws Exception {
         String formInput = "";
-        String fieldCase = Model.getModelData().get("fieldCase").getAsJsonObject().get(getModel().getLanguage()).getAsString();
+        String fieldCase = Model.getModelData().get("fieldCase").getAsJsonObject().get(getModel().getLanguage())
+                .getAsString();
 
         for (Column c : getTable().getColumns()) {
-            if (!c.getIsPrimaryKey()) {
+            if (c.getForeignKey() != null) {
+                String formSelectDeclaration = getData().get("page").getAsJsonObject().get("formSelect")
+                        .getAsJsonObject().get(getChoice()).getAsString();
+
+                String fieldName = WordFormatter.toCamelCase(c.getForeignKey().getTableName());
+                String upperFieldName = WordFormatter.capitalizeFirstLetter(fieldName);
+                String fieldPk = getCodeGenerator().getModelWithName(c.getForeignKey().getTableName())
+                        .getPrimaryKeyFieldName();
+                String upperFieldPk = WordFormatter.capitalizeFirstLetter(fieldPk);
+                String fieldFkDisplay = getCodeGenerator().getModelWithName(c.getForeignKey().getTableName())
+                        .getDisplayField();
+
+                formInput += formSelectDeclaration
+                        .replace("{fieldName}", fieldName)
+                        .replace("{upperFieldName}", upperFieldName)
+                        .replace("{upperFieldPk}", upperFieldPk)
+                        .replace("{fieldFkDisplay}", fieldFkDisplay)
+                        .replace("{fieldPk}", fieldPk);
+            } else if (!c.getIsPrimaryKey()) {
                 String type = getData().get("inputMapping").getAsJsonObject().get(c.getType()).getAsString();
 
                 String inputType = "other";
@@ -206,18 +272,19 @@ public class View {
                     inputType = "checkbox";
                 }
 
-                String formGroupDeclaration = getData().get("page").getAsJsonObject().get("formGroup").getAsJsonObject().get(inputType).getAsJsonObject().get(getChoice()).getAsString();
+                String formGroupDeclaration = getData().get("page").getAsJsonObject().get("formGroup").getAsJsonObject()
+                        .get(inputType).getAsJsonObject().get(getChoice()).getAsString();
 
                 // Case checking
                 String fieldName = WordFormatter.toCamelCase(c.getName());
                 if (fieldCase.equals("UPPER")) {
                     fieldName = WordFormatter.capitalizeFirstLetter(fieldName);
                 }
-                
+
                 formInput += formGroupDeclaration
-                    .replace("{fieldName}", fieldName)
-                    .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fieldName))
-                    .replace("{fieldInputType}", type);
+                        .replace("{fieldName}", fieldName)
+                        .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fieldName))
+                        .replace("{fieldInputType}", type);
             }
         }
         this.formInput = formInput;
@@ -231,6 +298,9 @@ public class View {
         String tableHead = "";
         for (Column c : getTable().getColumns()) {
             String th = WordFormatter.toSpacedUpperCase(c.getName());
+            if (c.getForeignKey() != null) {
+                th = WordFormatter.toSpacedUpperCase(c.getForeignKey().getTableName());
+            }
             tableHead += "\n\t\t\t\t\t\t<th>" + th + "</th>";
         }
         tableHead += "\n\t\t\t\t\t\t<th></th>";
@@ -242,7 +312,14 @@ public class View {
     }
 
     public void setTableBody() throws Exception {
-        String variableName = WordFormatter.toCamelCase(getModel().getClassName());
+        String variableName = getModel().getFieldName();
+
+        String fieldCase = Model.getModelData().get("fieldCase").getAsJsonObject().get(getModel().getLanguage()).getAsString();
+
+        if (fieldCase.equals("UPPER")) {
+            variableName = WordFormatter.capitalizeFirstLetter(variableName);
+        }
+
         String dataName = variableName + "s";
         String tr = getData().get("page").getAsJsonObject().get("tableLooping").getAsJsonObject()
                 .get("tr").getAsJsonObject().get(getChoice()).getAsString();
@@ -254,6 +331,17 @@ public class View {
         for (Column c : getTable().getColumns()) {
             String fieldNameNotCapitalize = WordFormatter.toCamelCase(c.getName());
             String fieldNameCapitalize = WordFormatter.capitalizeFirstLetter(fieldNameNotCapitalize);
+
+            if (c.getForeignKey() != null) {
+                String fkTypeField = WordFormatter.toCamelCase(c.getForeignKey().getTableName());
+                String fkDisplayField = getCodeGenerator().getModelWithName(c.getForeignKey().getTableName())
+                        .getDisplayField();
+
+                fieldNameCapitalize = WordFormatter.capitalizeFirstLetter(fkTypeField) + "."
+                        + WordFormatter.capitalizeFirstLetter(fkDisplayField);
+                fieldNameNotCapitalize = fkTypeField + "." + fkDisplayField;
+            }
+
             String tdCopy = td;
             tdCopy = tdCopy.replace("{fieldNameNotCapitalize}", fieldNameNotCapitalize);
             tdCopy = tdCopy.replace("{fieldNameCapitalize}", fieldNameCapitalize);
@@ -288,8 +376,8 @@ public class View {
 
     public void setPageImport() {
         String pageImport = getData().get("page").getAsJsonObject()
-        .get("pageImport").getAsJsonObject().get(getChoice()).getAsString()
-        .replace("{modelPackage}", getModel().getPackageName());
+                .get("pageImport").getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{modelPackage}", getModel().getPackageName());
         this.pageImport = pageImport;
     }
 
@@ -299,9 +387,9 @@ public class View {
 
     public String getCreateNewLink() {
         return getData().get("page").getAsJsonObject().get("createNewLink")
-            .getAsJsonObject().get(getChoice()).getAsString()
-            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
-            .replace("{className}", getModel().getClassName());
+                .getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+                .replace("{className}", getModel().getClassName());
     }
 
     public String getCreateNewDescription() {
@@ -310,21 +398,21 @@ public class View {
 
     public String getBackLink() {
         return getData().get("page").getAsJsonObject().get("backLink")
-            .getAsJsonObject().get(getChoice()).getAsString()
-            .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
-            .replace("{className}", getModel().getClassName());
+                .getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{typeFieldName}", WordFormatter.firstLetterToLower(getModel().getClassName()))
+                .replace("{className}", getModel().getClassName());
     }
 
     public String getIdHiddenInput() throws Exception {
         return getData().get("page").getAsJsonObject().get("idHiddenInput")
-            .getAsJsonObject().get(getChoice()).getAsString()
-            .replace("{fieldName}", getModel().getPrimaryKeyFieldName());
+                .getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{fieldName}", getModel().getPrimaryKeyFieldName());
     }
 
     public String getFormRequirements() throws Exception {
         return getData().get("page").getAsJsonObject().get("formRequirements")
-            .getAsJsonObject().get(getChoice()).getAsString()
-            .replace("{variableName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
+                .getAsJsonObject().get(getChoice()).getAsString()
+                .replace("{variableName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
     }
 
     public void loadListPageTemplate() throws Exception {
@@ -338,6 +426,7 @@ public class View {
         listContent = listContent.replace("#pageTitle#", getPageTitle());
         listContent = listContent.replace("#tableHead#", getTableHead());
         listContent = listContent.replace("#tableBody#", getTableBody());
+        listContent = listContent.replace("#linkList#", getLinkList());
 
         setListPageTemplateContent(listContent);
     }
@@ -354,6 +443,7 @@ public class View {
         createContent = createContent.replace("#backLink#", getBackLink());
         createContent = createContent.replace("#idHiddenInput#", getIdHiddenInput());
         createContent = createContent.replace("#formRequirements#", getFormRequirements());
+        createContent = createContent.replace("#errorDiv#", getErrorDiv());
 
         setCreatePageTemplateContent(createContent);
     }
@@ -365,7 +455,9 @@ public class View {
 
     public void generate() {
         // generating list page
-        FileUtil.createFileWithContent(getListPageTemplateContent(), getOutputPath() + "/" + getViewPackage() + "/" + getSelfPackaging(), getPageFileName("list"));
-        FileUtil.createFileWithContent(getCreatePageTemplateContent(), getOutputPath() + "/" + getViewPackage() + "/" + getSelfPackaging(), getPageFileName("create"));
+        FileUtil.createFileWithContent(getListPageTemplateContent(),
+                getOutputPath() + "/" + getViewPackage() + "/" + getSelfPackaging(), getPageFileName("list"));
+        FileUtil.createFileWithContent(getCreatePageTemplateContent(),
+                getOutputPath() + "/" + getViewPackage() + "/" + getSelfPackaging(), getPageFileName("create"));
     }
 }

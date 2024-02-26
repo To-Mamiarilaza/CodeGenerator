@@ -126,7 +126,7 @@
             "MyDAO": "@DBTable(name = \"{tableName}\", isAutoIncrement = true)"
         },
         "field": {
-            "JPA": "{PKAnnotation}\n{FKAnnotation}{ColumnMappingAnnotation})",
+            "JPA": "{PKAnnotation}\n{FKAnnotation}{ColumnMappingAnnotation}",
             "Entity": "{PKAnnotation}\n{FKAnnotation}{ColumnMappingAnnotation}",
             "MyDAO": "@DBField(name = \"{columnName}\" {PKAnnotation} {FKAnnotation})"
         }
