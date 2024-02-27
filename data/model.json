@@ -115,7 +115,7 @@
         "C#": ["Entity"]
     },
     "DAOImports": {
-        "JPA": ["jakarta.persistence.*"],
+        "JPA": ["javax.persistence.*"],
         "Entity": ["System.ComponentModel.DataAnnotations.Schema", "System.ComponentModel.DataAnnotations"],
         "MyDAO": ["generalisation.annotations.DBTable", "generalisation.annotations.DBField"]
     },
