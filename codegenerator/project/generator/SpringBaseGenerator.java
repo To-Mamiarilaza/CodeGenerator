@@ -17,18 +17,23 @@ public class SpringBaseGenerator implements ProjectBaseGenerator {
         String outputPath = config.get("outputPath").getAsString();
 
         // Create empty base project
-        String command = "mvn archetype:generate -DgroupId=" + projectName.toLowerCase() + " -DartifactId="
-                + projectName + " -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false";
-        Cmd.execute(command, new File(outputPath));
+        System.out.println("\n--> Download base project from repository ");
+        String fetchCommand = "curl https://start.spring.io/starter.zip -d language=java -d javaVersion=17 -d bootVersion=3.2.3 -d groupId=mg.mamiarilaza -d artifactId=#projectName# -d type=maven-project -d name=#projectName# -d packageName=#lowerProjectName# -o #projectName#.zip";
+        fetchCommand = fetchCommand.replace("#projectName#", projectName).replace("#lowerProjectName#", projectName.toLowerCase());
+        Cmd.execute(fetchCommand, new File(outputPath));
+        Cmd.execute("unzip " + projectName + ".zip -d " + projectName, new File(outputPath));
+        Cmd.execute("rm " + projectName + ".zip", new File(outputPath));
 
         // Add all dependencies
+        System.out.println("\n--> Update the pom xml for dependencies ");
         addAllDependencies(projectName, outputPath);
 
         // Add application properties
+        System.out.println("\n--> Setup the application properties ");
         addApplicationProperties(projectName, outputPath, config.get("database").getAsJsonObject());
 
         // Build the project
-        System.out.println("BUILD DU PROJET");
+        System.out.println("\n--> Build the project ");
         Cmd.execute("mvn clean install", new File(outputPath + "/" + projectName));
     }
 

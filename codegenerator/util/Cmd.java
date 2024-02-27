@@ -15,8 +15,6 @@ public class Cmd {
         // Process process = Runtime.getRuntime().exec("cmd /c " + command, null, workingDirectory);    // For windows
         Process process = Runtime.getRuntime().exec(command, null, workingDirectory);
 
-        System.out.println("Execution du command : " + command);
-
         // In case of error
         InputStream errorStream = process.getErrorStream();
         BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));

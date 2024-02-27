@@ -3,6 +3,7 @@
 - Le nom du classe va être comme le nom du table même si il y a un "s" a la fin
 - Lors du processus de generation, on doit générer tous les models interdépendant ( Foreign Key ), ensuite tous on ne peut générer un controller ou un view si le model de cette entité n'est pas générer.
 - Le output path du projet ne doit pas se terminé avec un "/"
+- On peut utiliser curl pour generer le projet 
 
 ### Avenir :
 - On n'efface pas tous le contenue mais on append comme dans git si on regénère
@@ -14,6 +15,7 @@
 - Changement en service des fonctions JPA
 - On doit trouver une autre manière de coordonner les models, views, controller, sns pour faciliter leurs relations
 - Catch the main exception output 
+- On doit travailler pour que ca marche avec mysql : " Information base de donnees, Dialect JPA, URL Connection ".
 
 ### Changement non assurées :
 - J'ai enlevé le "\n" dans le DAOAnnotations / fields pour enlever l'espacement dans le code
@@ -30,15 +32,7 @@
 2. Update pom.xml
 3. Build with : "mvn clean install"
 
-
-To generate a Spring Boot project using the terminal, you can use Spring Boot's official tool called Spring Initializr. Spring Initializr allows you to quickly create a new Spring Boot project with your desired configurations. You can generate a project either by using cURL or by accessing the Initializr web UI via a browser. Here's how you can do it using cURL:
-
-Open your terminal.
-
-Use cURL to send a GET request to the Spring Initializr service with your desired project configurations. For example:
-
-bash
-Copy code
+##### Get the zip form repository
 curl https://start.spring.io/starter.zip \
   -d language=java \
   -d javaVersion=17 \
@@ -49,3 +43,6 @@ curl https://start.spring.io/starter.zip \
   -d name=demo \
   -d packageName=mg.mamiarilaza.demo \
   -o demo.zip
+
+##### unzip file 
+unzip demo.zip -d demo
