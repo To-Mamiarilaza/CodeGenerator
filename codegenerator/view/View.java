@@ -1,5 +1,7 @@
 package codegenerator.view;
 
+import java.util.List;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -32,10 +34,11 @@ public class View {
     private String listPageTemplateContent;
     private String createPageTemplateContent;
     private String updatePageTemplateContent;
+    private String apiUrl;
     private CodeGenerator codeGenerator; // For getting the FK model
 
     public View(Model model, String choice, String viewPackage, String outputPath, JsonObject data,
-            CodeGenerator codeGenerator) throws Exception {
+            CodeGenerator codeGenerator, String apiUrl) throws Exception {
         setCodeGenerator(codeGenerator);
         setModel(model);
         setTable(model.getTable());
@@ -53,6 +56,7 @@ public class View {
         setPageImport();
         setErrorDiv();
         setLinkList();
+        setApiUrl(apiUrl);
     }
 
     public Table getTable() {
@@ -85,6 +89,14 @@ public class View {
 
     public void setChoice(String choice) {
         this.choice = choice;
+    }
+
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public void setApiUrl(String apiUrl) {
+        this.apiUrl = apiUrl;
     }
 
     public String getViewPackage() {
@@ -263,6 +275,7 @@ public class View {
                         .replace("{upperFieldName}", upperFieldName)
                         .replace("{upperFieldPk}", upperFieldPk)
                         .replace("{fieldFkDisplay}", fieldFkDisplay)
+                        .replace("{className}", getModel().getClassName())
                         .replace("{fieldPk}", fieldPk);
             } else if (!c.getIsPrimaryKey()) {
                 String type = getData().get("inputMapping").getAsJsonObject().get(c.getType()).getAsString();
@@ -423,6 +436,131 @@ public class View {
                 .replace("{variableName}", WordFormatter.firstLetterToLower(getModel().getClassName()));
     }
 
+    public String getFkSelectOptionsState() {
+        String selectOptions = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("fkSelectOptionsState").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getForeignKeyColumns();
+        for (Column column : columns) {
+            String fieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            selectOptions += declaration.replace("{fieldName}", fieldName).replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fieldName));
+        }
+
+        return selectOptions;
+    }
+
+    public String getFieldValueState() {
+        String fieldValueStates = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("fieldValueState").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getColumns();
+        for (Column column : columns) {
+            String fieldName = WordFormatter.toCamelCase(column.getName());
+            fieldValueStates += declaration.replace("{fieldName}", fieldName).replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fieldName));
+        }
+
+        return fieldValueStates;
+    }
+
+    public String getFkElementsFetching() throws Exception {
+        String fkElementsFetching = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("fkElementsFetching").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getForeignKeyColumns();
+        for (Column column : columns) {
+            String fkFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            // the pk of the foreign key
+            String pkFieldName = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getPrimaryKeyFieldName();
+
+            fkElementsFetching += declaration.replace("{fieldName}", fkFieldName)
+            .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fkFieldName))
+            .replace("{pkFieldName}", pkFieldName)
+            .replace("{upperPkFieldName}", WordFormatter.capitalizeFirstLetter(pkFieldName));
+        }
+
+        return fkElementsFetching;
+    }
+
+    public String getFieldValueSetting() throws Exception {
+        String fieldValueSetting = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("fieldValueSetting").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getColumns();
+        for (Column column : columns) {
+            String upperFieldName = WordFormatter.toCamelCase(column.getName());
+            String fieldName = WordFormatter.toCamelCase(column.getName());
+
+            if (column.getForeignKey() != null) {
+                fieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName()) + "." + fieldName;
+            }
+
+            fieldValueSetting += declaration.replace("{fieldName}", fieldName)
+            .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(upperFieldName));
+        }
+
+        return fieldValueSetting;
+    }
+
+    public String getHandleFkSelectOptionsChange() throws Exception {
+        String handleFkSelectOptionsChange = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("handleFkSelectOptionsChange").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getForeignKeyColumns();
+        for (Column column : columns) {
+            String fkFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            // the pk of the foreign key
+            String pkFieldName = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getPrimaryKeyFieldName();
+
+            handleFkSelectOptionsChange += declaration.replace("{fieldName}", fkFieldName)
+            .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fkFieldName))
+            .replace("{upperPkFieldName}", WordFormatter.capitalizeFirstLetter(pkFieldName));
+        }
+
+        return handleFkSelectOptionsChange;
+    }
+
+    public String getObjectJsonTemplate() throws Exception {
+        String objectJsonTemplate = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("objectJsonTemplate").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getColumns();
+        for (Column column : columns) {
+            String fieldNameKey = WordFormatter.toCamelCase(column.getName());
+            String fieldNameValue = WordFormatter.toCamelCase(column.getName());
+
+            if (column.getForeignKey() != null) {
+                fieldNameKey = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+                String foreignPk = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getPrimaryKeyFieldName();
+                fieldNameValue = "{ \n        \"" + foreignPk + "\": " + foreignPk + "\n      }";
+            }
+
+            objectJsonTemplate += declaration.replace("{fieldNameKey}", fieldNameKey)
+            .replace("{fieldNameValue}", fieldNameValue);
+        }
+
+        objectJsonTemplate = objectJsonTemplate.substring(0, objectJsonTemplate.length() - 1);
+        return objectJsonTemplate;
+    }
+
+    public String getFkOptionsRowDisplay() throws Exception {
+        String fkOptionsRowDisplay = "";
+
+        String declaration = getData().get("page").getAsJsonObject().get("fkOptionsRowDisplay").getAsJsonObject().get(getChoice()).getAsString();
+        List<Column> columns = getModel().getTable().getForeignKeyColumns();
+        for (Column column : columns) {
+            String fkFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
+            // the pk of the foreign key
+            String pkFieldName = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getPrimaryKeyFieldName();
+            String fkDisplayField = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getDisplayField();
+
+            fkOptionsRowDisplay += declaration.replace("{fieldName}", fkFieldName)
+            .replace("{fkDisplayField}", fkDisplayField)
+            .replace("{pkFieldName}", pkFieldName);
+        }
+
+        return fkOptionsRowDisplay;
+    }
+
     public void loadListPageTemplate() throws Exception {
         String templateName = getData().get("page").getAsJsonObject().get("listTemplate").getAsJsonObject().get(getChoice()).getAsString();
         String listContent = FileUtil.toStringInnerFile("/template/view/" + templateName);
@@ -439,6 +577,7 @@ public class View {
         listContent = listContent.replace("#className#", getModel().getClassName());
         listContent = listContent.replace("#typeFieldName#", getModel().getFieldName());
         listContent = listContent.replace("#pkFieldName#", getModel().getPrimaryKeyFieldName());
+        listContent = listContent.replace("#apiUrl#", getApiUrl());
 
         setListPageTemplateContent(listContent);
     }
@@ -457,6 +596,18 @@ public class View {
         createContent = createContent.replace("#idHiddenInput#", getIdHiddenInput());
         createContent = createContent.replace("#formRequirements#", getFormRequirements());
         createContent = createContent.replace("#errorDiv#", getErrorDiv());
+        createContent = createContent.replace("#className#", getModel().getClassName());
+        createContent = createContent.replace("#typeFieldName#", getModel().getFieldName());
+
+        // For front end separated technology like react
+        createContent = createContent.replace("#fkSelectOptionsState#", getFkSelectOptionsState());
+        createContent = createContent.replace("#fieldValueState#", getFieldValueState());
+        createContent = createContent.replace("#fkElementsFetching#", getFkElementsFetching());
+        createContent = createContent.replace("#fieldValueSetting#", getFieldValueSetting());
+        createContent = createContent.replace("#handleFkSelectOptionsChange#", getHandleFkSelectOptionsChange());
+        createContent = createContent.replace("#objectJsonTemplate#", getObjectJsonTemplate());
+        createContent = createContent.replace("#apiUrl#", getApiUrl());
+        createContent = createContent.replace("#fkOptionsRowDisplay#", getFkOptionsRowDisplay());
 
         setCreatePageTemplateContent(createContent);
     }

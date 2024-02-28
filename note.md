@@ -15,6 +15,7 @@
 - Changement en service des fonctions JPA
 - On doit trouver une autre manière de coordonner les models, views, controller, sns pour faciliter leurs relations
 - Catch the main exception output 
+- On doit aussi generer le App.js et bien placer les routers
 - On doit travailler pour que ca marche avec mysql : " Information base de donnees, Dialect JPA, URL Connection ".
 
 ### Changement non assurées :
@@ -26,6 +27,7 @@
 - Toutes les repository doivent se placer dans un meme package pour le moment ( Problème au niveau de l'import controller )
 - Affichage si valeur null ou si valeur foreign key null, ( Problème au niveau du select list, l'elements selectionné ne s'affiche plus pour .net)
 - On doit mettre en variable les classOutputPath et les viewOutputPath pour chaque framework
+- Input react et le checkbox
 
 ### Generation du projet de base :
 #### SPRING :

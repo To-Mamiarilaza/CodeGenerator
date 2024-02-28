@@ -66,14 +66,12 @@ export default function #className#List() {
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
           <h5 className="text-white">#description#</h5>
-          <a
+          <button
             className="btn btn-outline-secondary mt-3 px-4"
-            href="#"
-            type="button"
             onClick={() => navigate("#createNewLink#")}
           >
             <i className="fas fa-plus me-3"></i>#createNewDescription#
-          </a>
+          </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>

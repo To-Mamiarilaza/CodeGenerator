@@ -11,7 +11,7 @@ export default function TypeLanguageList() {
   document.body.style.backgroundColor = "#161616";
 
   // fetching typeLanguages data
-  const API_BASE_URL = "#apiUrl#";
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
     axios.get(API_BASE_URL + "/typeLanguages").then((response) => {
@@ -76,14 +76,12 @@ export default function TypeLanguageList() {
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
           <h5 className="text-white">Liste des typeLanguages</h5>
-          <a
+          <button
             className="btn btn-outline-secondary mt-3 px-4"
-            href="#"
-            type="button"
-            onClick={() => navigate("typeLanguages/new")}
+            onClick={() => navigate("/typeLanguages/new")}
           >
             <i className="fas fa-plus me-3"></i>Nouvelle typeLanguage
-          </a>
+          </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>

@@ -11,7 +11,7 @@ export default function PaysList() {
   document.body.style.backgroundColor = "#161616";
 
   // fetching payss data
-  const API_BASE_URL = "#apiUrl#";
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
     axios.get(API_BASE_URL + "/payss").then((response) => {
@@ -75,14 +75,12 @@ export default function PaysList() {
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
           <h5 className="text-white">Liste des payss</h5>
-          <a
+          <button
             className="btn btn-outline-secondary mt-3 px-4"
-            href="#"
-            type="button"
-            onClick={() => navigate("payss/new")}
+            onClick={() => navigate("/payss/new")}
           >
             <i className="fas fa-plus me-3"></i>Nouvelle pays
-          </a>
+          </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>

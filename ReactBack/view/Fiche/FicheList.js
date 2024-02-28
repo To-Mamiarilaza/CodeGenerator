@@ -11,7 +11,7 @@ export default function FicheList() {
   document.body.style.backgroundColor = "#161616";
 
   // fetching fiches data
-  const API_BASE_URL = "#apiUrl#";
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
     axios.get(API_BASE_URL + "/fiches").then((response) => {
@@ -81,14 +81,12 @@ export default function FicheList() {
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
           <h5 className="text-white">Liste des fiches</h5>
-          <a
+          <button
             className="btn btn-outline-secondary mt-3 px-4"
-            href="#"
-            type="button"
-            onClick={() => navigate("fiches/new")}
+            onClick={() => navigate("/fiches/new")}
           >
             <i className="fas fa-plus me-3"></i>Nouvelle fiche
-          </a>
+          </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>
