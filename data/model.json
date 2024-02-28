@@ -145,5 +145,13 @@
         "JPA": "@ManyToOne\n@JoinColumn(name = \"{fkColumnName}\")",
         "Entity": "[ForeignKey(\"{fkColumnName}\")]",
         "MyDAO": ", isForeignKey = true"
+    },
+    "classOutputPath": {
+        "spring": "{outputPath}/{projectName}/src/main/java",
+        ".net": "{outputPath}/{projectName}"
+    },
+    "viewOutputPath": {
+        "spring": "{outputPath}/{projectName}/src/main/resources/templates",
+        ".net": "{outputPath}/{projectName}"
     }
 }

@@ -440,6 +440,9 @@ public class View {
         String selectOptions = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("fkSelectOptionsState").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
         List<Column> columns = getModel().getTable().getForeignKeyColumns();
         for (Column column : columns) {
             String fieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
@@ -453,6 +456,9 @@ public class View {
         String fieldValueStates = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("fieldValueState").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
         List<Column> columns = getModel().getTable().getColumns();
         for (Column column : columns) {
             String fieldName = WordFormatter.toCamelCase(column.getName());
@@ -466,6 +472,10 @@ public class View {
         String fkElementsFetching = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("fkElementsFetching").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
+
         List<Column> columns = getModel().getTable().getForeignKeyColumns();
         for (Column column : columns) {
             String fkFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
@@ -485,6 +495,10 @@ public class View {
         String fieldValueSetting = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("fieldValueSetting").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
+
         List<Column> columns = getModel().getTable().getColumns();
         for (Column column : columns) {
             String upperFieldName = WordFormatter.toCamelCase(column.getName());
@@ -505,6 +519,10 @@ public class View {
         String handleFkSelectOptionsChange = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("handleFkSelectOptionsChange").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
+
         List<Column> columns = getModel().getTable().getForeignKeyColumns();
         for (Column column : columns) {
             String fkFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
@@ -523,6 +541,10 @@ public class View {
         String objectJsonTemplate = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("objectJsonTemplate").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
+
         List<Column> columns = getModel().getTable().getColumns();
         for (Column column : columns) {
             String fieldNameKey = WordFormatter.toCamelCase(column.getName());
@@ -546,6 +568,10 @@ public class View {
         String fkOptionsRowDisplay = "";
 
         String declaration = getData().get("page").getAsJsonObject().get("fkOptionsRowDisplay").getAsJsonObject().get(getChoice()).getAsString();
+        if (declaration.equals("")) {
+            return "";
+        }
+        
         List<Column> columns = getModel().getTable().getForeignKeyColumns();
         for (Column column : columns) {
             String fkFieldName = WordFormatter.toCamelCase(column.getForeignKey().getTableName());

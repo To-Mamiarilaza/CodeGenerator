@@ -1,5 +1,7 @@
 {
-    "outputPath": "./Razor",
+    "projectName": "DotnetApp",
+    "outputPath": ".",
+    "withBaseProject": true,
     "database": {
         "type": "postgresql",
         "database": "fiche_employe",
@@ -21,6 +23,7 @@
     "view": {
         "choice": "razor",
         "package": "Views" ,
+        "apiUrl": "",
         "tables": [{"name": "*"}]
     }
 }

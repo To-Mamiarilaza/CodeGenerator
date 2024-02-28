@@ -12,7 +12,8 @@
 - On doit trouver une autre manière de coordonner les models, views, controller, sns pour faciliter leurs relations
 - Catch the main exception output 
 - On doit aussi generer le App.js et bien placer les routers
-- On doit travailler pour que ca marche avec mysql : " Information base de donnees, Dialect JPA, URL Connection ".
+- On doit travailler pour que ca marche avec mysql : " Information base de donnees, Dialect JPA, URL Connection, Dependences ".
+- Gestion version dotnet
 
 ### Changement non assurées :
 
@@ -23,6 +24,6 @@
 - Input react et le checkbox
 
 ### A Faire prochainement :
-- Generation du projet .net
 - Checkbox input de react et gestion table avec s a la fin ( CORS )
+- Preparation livraison
 - Creation du projet react
