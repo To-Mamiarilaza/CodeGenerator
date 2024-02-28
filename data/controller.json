@@ -38,7 +38,7 @@
     },
     "classAnnotation": {
         "spring": {
-            "REST": "@RestController\n@RequestMapping(\"{requestMapping}\")",
+            "REST": "@RestController\n@RequestMapping(\"{requestMapping}\")\n@CrossOrigin(origins = \"*\", allowedHeaders = \"*\")",
             "MVC": "@Controller"
         },
         ".net": {

@@ -1,7 +1,7 @@
 {
-    "projectName": "Thymeleaf",
-    "withBaseProject": true,
-    "outputPath": ".",
+    "projectName": "ReactBack",
+    "withBaseProject": false,
+    "outputPath": "./ReactBack",
     "database": {
         "type": "postgresql",
         "database": "fiche_employe",
@@ -16,13 +16,14 @@
         "tables": [{"name": "*", "package": "thymeleaf.model"}]
     },
     "controller": {
-        "type": "MVC",
+        "type": "REST",
         "dbServicePackage": "thymeleaf.repository",
         "tables": [{"name": "*", "package": "thymeleaf.controller", "requestMapping": "DEFAULT"}]
     },
     "view": {
-        "choice": "thymeleaf",
-        "package": "" ,
+        "choice": "react",
+        "package": "view" ,
+        "apiUrl": "http://localhost:8080",
         "tables": [{"name": "*"}]
     }
 }

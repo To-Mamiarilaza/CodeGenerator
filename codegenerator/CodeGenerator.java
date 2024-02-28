@@ -336,6 +336,7 @@ public class CodeGenerator {
     public void generateView(JsonObject viewConfig, String outputPath, JsonObject data) throws Exception {
         String viewChoice = viewConfig.get("choice").getAsString();
         String viewPackage = viewConfig.get("package").getAsString();
+        String apiUrl = viewConfig.get("apiUrl").getAsString();
 
         JsonArray tableArray = viewConfig.get("tables").getAsJsonArray();
 
@@ -349,7 +350,7 @@ public class CodeGenerator {
                     System.out.print("- " + table.getName() + " : ");
                     Model model = getModelWithName(table.getName());
 
-                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this);
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this, apiUrl);
                     view.loadTemplate();
                     view.generate();
 
@@ -363,7 +364,7 @@ public class CodeGenerator {
                 if (targetTable != null) {
                     Model model = getModelWithName(targetTable.getName());
 
-                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this);
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this, apiUrl);
                     view.loadTemplate();
                     view.generate();
 

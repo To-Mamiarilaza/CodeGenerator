@@ -1,127 +1,204 @@
 {
   "page": {
+    "listTemplate": {
+      "mine": "mvc/list.template",
+      "thymeleaf": "mvc/list.template",
+      "razor": "mvc/list.template",
+      "react": "react/list.template"
+    },
+    "createTemplate": {
+      "mine": "mvc/create.template",
+      "thymeleaf": "mvc/create.template",
+      "razor": "mvc/create.template",
+      "react": "react/create.template"
+    },
     "fileExtension": {
       "mine": ".jsp",
       "thymeleaf": ".html",
-      "razor": ".cshtml"
+      "razor": ".cshtml",
+      "react": ".js"
     },
     "fileName": {
       "list": {
         "thymeleaf": "{typeFieldName}s",
         "razor": "Index",
-        "mine": "{typeFieldName}"
+        "mine": "{typeFieldName}",
+        "react": "{className}List"
       },
       "create": {
         "thymeleaf": "{typeFieldName}_form",
         "razor": "{className}Form",
-        "mine": "{typeFieldName}_form"
+        "mine": "{typeFieldName}_form",
+        "react": "{className}Form"
       },
       "update": {
         "thymeleaf": "{typeFieldName}_update",
         "razor": "{className}Form",
-        "mine": "{typeFieldName}_update"
+        "mine": "{typeFieldName}_update",
+        "react": "{className}Form"
       }
     },
     "createNewLink": {
       "thymeleaf": "{typeFieldName}s/new",
       "mine": "{typeFieldName}/new",
-      "razor": "{className}/Create"
+      "razor": "{className}/Create",
+      "react": "/{typeFieldName}s/new"
     },
     "backLink": {
       "thymeleaf": "/{typeFieldName}s",
       "mine": "/{typeFieldName}s",
-      "razor": "/{className}"
+      "razor": "/{className}",
+      "react": "/{typeFieldName}s"
     },
     "updateLink": {
       "thymeleaf": "/{typeFieldName}s/save",
       "mine": "/{typeFieldName}s/save",
-      "razor": "/{className}/Update"
+      "razor": "/{className}/Update",
+      "react": ""
     },
     "pageRequirement": {
       "list": {
         "mine": "<%a taglib uri=\"http://java.sun.com/jstl/core\" prefix=\"c\" %>",
         "thymeleaf": "",
-        "razor": "@model List<{className}>"
+        "razor": "@model List<{className}>",
+        "react": ""
       },
       "edit": {
         "mine": "<%a taglib uri=\"http://java.sun.com/jstl/core\" prefix=\"c\" %>",
         "thymeleaf": "",
-        "razor": "@model {className}"
+        "razor": "@model {className}",
+        "react": ""
       }
     },
     "htmlRequirement": {
       "mine": "",
       "thymeleaf": "xmlns:th=\"http://www.thymeleaf.org\"",
-      "razor": ""
+      "razor": "",
+      "react": ""
     },
     "formGroup": {
       "other": {
         "mine": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<input id=\"{fieldName}\" type=\"{fieldInputType}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
         "thymeleaf": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<input id=\"{fieldName}\" type=\"{fieldInputType}\" th:field=\"*{{fieldName}}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
-        "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{fieldName}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<input asp-for=\"{fieldName}\" class=\"form-control\" />\n\t\t\t\t\t</div>"
+        "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{fieldName}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<input asp-for=\"{fieldName}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
+        "react": "\n              <div class=\"mb-3\">\n                <label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n                <input id=\"{fieldName}\" value={{fieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} type=\"{fieldInputType}\" class=\"form-control\"/>\n              </div>"
       },
       "checkbox": {
         "mine": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
         "thymeleaf": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
-        "razor": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" asp-for=\"{fieldName}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" asp-for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t</div>"
+        "razor": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" asp-for=\"{fieldName}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" asp-for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
+        "react": "\n              <div class=\"mb-3\">\n                <input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" value={{fieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} />\n                <label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n              </div>"
       }
     },
     "formSelect": {
       "mine": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<select id=\"{fieldName}\" class=\"form-select\"> th:field=\"*{{fieldName}.{fieldPk}}\">\n\t\t\t\t\t\t\t<option th:each=\"{fieldName} : ${{fieldName}s}\" th:value=\"${{fieldName}.{fieldPk}}\" th:text=\"${{fieldName}.{fieldFkDisplay}}\"></option>\n\t\t\t\t\t\t</select>\n\t\t\t\t\t</div>",
       "thymeleaf": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<select id=\"{fieldName}\" class=\"form-select\" th:field=\"*{{fieldName}.{fieldPk}}\">\n\t\t\t\t\t\t\t<option th:each=\"{fieldName} : ${{fieldName}s}\" th:value=\"${{fieldName}.{fieldPk}}\" th:text=\"${{fieldName}.{fieldFkDisplay}}\"></option>\n\t\t\t\t\t\t</select>\n\t\t\t\t\t</div>",
-      "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{upperFieldName}.{upperFieldPk}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<select asp-for=\"{upperFieldName}.{upperFieldPk}\" class=\"form-select\" asp-items=\"ViewBag.{upperFieldName}s\"></select>\n\t\t\t\t\t</div>"
+      "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{upperFieldName}.{upperFieldPk}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<select asp-for=\"{upperFieldName}.{upperFieldPk}\" class=\"form-select\" asp-items=\"ViewBag.{upperFieldName}s\"></select>\n\t\t\t\t\t</div>",
+      "react": "\n              <div class=\"mb-3\">\n                <label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n                <select id=\"{fieldName}\" class=\"form-select\" onChange={(e) => handle{upperFieldName}SelectChange(e)}>{{fieldName}Rows}</select>\n              </div>"
     },
     "linkList": {
       "mine": "",
       "thymeleaf": "\n\t\t\t\t<a href=\"/{typeFieldName}s\" class=\"list-group-item list-group-item-action\">{entityName}</a>",
-      "razor": "\n\t\t\t\t<a href=\"/{type}\" class=\"list-group-item list-group-item-action\">{entityName}</a>"
+      "razor": "\n\t\t\t\t<a href=\"/{type}\" class=\"list-group-item list-group-item-action\">{entityName}</a>",
+      "react": ""
     },
     "idHiddenInput": {
       "mine": "id=\"{fieldName}\"",
       "thymeleaf": "th:field=\"*{{fieldName}}\"",
-      "razor": "asp-for=\"{fieldName}\""
+      "razor": "asp-for=\"{fieldName}\"",
+      "react": ""
     },
     "formRequirements": {
       "mine": "",
       "thymeleaf": "enctype=\"multipart/form-data\" th:object=\"${{variableName}}\"",
-      "razor": ""
+      "razor": "",
+      "react": ""
     },
     "errorDiv": {
       "mine": "",
       "thymeleaf": "\n\n\t\t\t\t\t<div th:if=\"${errorMessage != null}\" class=\"mb-3\">\n\t\t\t\t\t\t<label class=\"form-label text-danger\" th:text=\"${errorMessage}\"></label>\n\t\t\t\t\t</div>",
-      "razor": "\n\n\t\t\t\t\t@if (ViewBag.ErrorMessage != null) {\n\t\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t\t<label class=\"form-label text-danger\">@ViewBag.ErrorMessage</label>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t}"
+      "razor": "\n\n\t\t\t\t\t@if (ViewBag.ErrorMessage != null) {\n\t\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t\t<label class=\"form-label text-danger\">@ViewBag.ErrorMessage</label>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t}",
+      "react": ""
     },
     "tableLooping": {
       "tr": {
         "mine": "\n\t\t\t\t\t<c:forEach var=\"{variableName}\" items=\"${{dataName}}\">\n\t\t\t\t\t\t<tr>{td}\n\t\t\t\t\t\t</tr>\n\t\t\t\t\t</c:forEach>",
         "thymeleaf": "\n\t\t\t\t\t<tr th:each=\"{variableName} : ${dataName}\">{td}\n\t\t\t\t\t</tr>",
-        "razor": "\n\t\t\t\t\t@foreach (var {variableName} in Model)\n\t\t\t\t\t{\n\t\t\t\t\t\t<tr>{td}\n\t\t\t\t\t\t</tr>\n\t\t\t\t\t}"
+        "razor": "\n\t\t\t\t\t@foreach (var {variableName} in Model)\n\t\t\t\t\t{\n\t\t\t\t\t\t<tr>{td}\n\t\t\t\t\t\t</tr>\n\t\t\t\t\t}",
+        "react": "\n      <tr key={{typeFieldName}.{pkFieldName}}>{td}\n      </tr>"
       },
       "td": {
-        "mine": "\n\t\t\t\t\t\t\t<td>${{variableName}.{fieldNameNotCapitalize}}</td>",
-        "thymeleaf": "\n\t\t\t\t\t\t<td>[[${{variableName}.{fieldNameNotCapitalize}}]]</td>",
-        "razor": "\n\t\t\t\t\t\t\t<td>@Html.DisplayFor(modelItem => {variableName}.{fieldNameCapitalize})</td>"
+        "mine": "\n\t\t\t\t\t\t\t<td>${{variableName}.{fieldName}}</td>",
+        "thymeleaf": "\n\t\t\t\t\t\t<td>[[${{variableName}.{fieldName}}]]</td>",
+        "razor": "\n\t\t\t\t\t\t\t<td>@Html.DisplayFor(modelItem => {variableName}.{fieldName})</td>",
+        "react": "\n        <td>{{variableName}.{fieldName}}</td>"
       }
     },
     "listAction": {
       "mine": "",
       "thymeleaf": "\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a th:href=\"@{'/{variableName}s/' + ${{variableName}.{pkFieldName}}}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t\t<a th:href=\"@{'/{variableName}s/delete/' + ${{variableName}.{pkFieldName}}}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t\t</td>",
-      "razor": "\n\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t<a asp-action=\"Edit\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t\t\t<a asp-action=\"Delete\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t\t\t</td>"
+      "razor": "\n\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t<a asp-action=\"Edit\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t\t\t<a asp-action=\"Delete\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t\t\t</td>",
+      "react": "\n        <td>\n          <a type=\"button\" onClick={() => navigate(\"/{variableName}s/\" + {variableName}.{pkFieldName})}><i className=\"fas fa-edit mx-3\"></i></a>\n          <a type=\"button\" onClick={() => delete{className}({variableName}.{pkFieldName})}><i className=\"fas text-danger fa-trash mx-3\"></i></a>\n        </td>"
     },
-    "packagingCase": {  
+    "packagingCase": {
       "thymeleaf": "LOWER",
       "razor": "UPPER",
-      "mine": "LOWER"
+      "mine": "LOWER",
+      "react": ""
     },
     "description": {
       "list": "Liste des {typeFieldName}s",
       "create": "Nouvelle {typeFieldName}",
-      "update": "Modifier le {typeFieldName}"
+      "update": "Modifier le {typeFieldName}",
+      "react": ""
     },
     "pageImport": {
       "thymeleaf": "",
       "razor": "@using {modelPackage}",
-      "mine": ""
+      "mine": "",
+      "react": ""
+    },
+    "fkSelectOptionsState": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n  const [{fieldName}s, set{upperFieldName}s] = useState([]);"
+    },
+    "fieldValueState": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n  const [{fieldName}, set{upperFieldName}] = useState();"
+    },
+    "fkElementsFetching": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n    axios.get(API_BASE_URL + \"/{fieldName}s\")\n    .then((response) => {\n      set{upperFieldName}s(response.data)\n      if(response.data.length > 0) {\n        set{upperPkFieldName}(response.data[0].{pkFieldName})\n      }\n    })\n    .catch((error) => {\n      alert(error)\n    })\n"
+    },
+    "fieldValueSetting": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n          set{upperFieldName}(response.data.{fieldName});"
+    },
+    "handleFkSelectOptionsChange": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n  const handle{upperFieldName}SelectChange = (event) => {\n    set{upperPkFieldName}(event.target.value);\n  };"
+    },
+    "objectJsonTemplate": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n      \"{fieldNameKey}\": {fieldNameValue},"
+    },
+    "fkOptionsRowDisplay": {
+      "thymeleaf": "",
+      "razor": "",
+      "mine": "",
+      "react": "\n\n  const {fieldName}Rows = [];\n  {fieldName}s.forEach(({fieldName}) => {\n    {fieldName}Rows.push(\n      <option value={{fieldName}.{pkFieldName}} selected={{fieldName}.{pkFieldName} === {pkFieldName}}>{{fieldName}.{fkDisplayField}}</option>\n    );\n  });"
     }
   },
   "inputMapping": {
