@@ -26,6 +26,20 @@ public class FileUtil {
         return content;
     }
 
+    // separate to three a string
+    public static String[] separateString(String origin, String begin, String end) {
+        String[] separations = new String[3];
+
+        int beginIndex = origin.indexOf(begin);
+        int endIndex = origin.indexOf(end);
+
+        separations[0] = origin.substring(0, beginIndex + begin.length());
+        separations[1] = origin.substring(beginIndex + begin.length(), endIndex);
+        separations[2] = origin.substring(endIndex, origin.length());
+
+        return separations;
+    }
+
     // get the file inner the jar
     public static String toStringInnerFile(String filePath) throws IOException {
         try (InputStream inputStream = FileUtil.class.getResourceAsStream(filePath);

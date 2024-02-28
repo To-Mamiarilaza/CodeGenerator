@@ -1,5 +1,7 @@
 {
-    "outputPath": "./Thymeleaf",
+    "projectName": "Thymeleaf",
+    "withBaseProject": true,
+    "outputPath": ".",
     "database": {
         "type": "postgresql",
         "database": "fiche_employe",
@@ -11,16 +13,16 @@
     "DAO": "JPA",
     "framework": "spring",
     "model": {
-        "tables": [{"name": "*", "package": "com.bezkoder.spring.thymeleaf.entity"}]
+        "tables": [{"name": "*", "package": "thymeleaf.model"}]
     },
     "controller": {
         "type": "MVC",
-        "dbServicePackage": "com.bezkoder.spring.thymeleaf.repository",
-        "tables": [{"name": "*", "package": "com.bezkoder.spring.thymeleaf.controller", "requestMapping": "DEFAULT"}]
+        "dbServicePackage": "thymeleaf.repository",
+        "tables": [{"name": "*", "package": "thymeleaf.controller", "requestMapping": "DEFAULT"}]
     },
     "view": {
         "choice": "thymeleaf",
-        "package": "template" ,
+        "package": "" ,
         "tables": [{"name": "*"}]
     }
 }

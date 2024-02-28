@@ -20,6 +20,8 @@ import codegenerator.controller.Controller;
 import codegenerator.database.*;
 import codegenerator.dbservice.DBService;
 import codegenerator.model.*;
+import codegenerator.project.generator.ProjectBaseGenerator;
+import codegenerator.project.generator.SpringBaseGenerator;
 import codegenerator.util.CLIUtil;
 import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
@@ -142,8 +144,9 @@ public class CodeGenerator {
 
                 // avoid redondancies
                 if (oldImport.contains(typeImport)) {
-                    model.setTemplateContent(CodeFormatter.removeContainingLine("#import-" + referencedModel.getClassName() + "#",
-                    model.getTemplateContent()));
+                    model.setTemplateContent(
+                            CodeFormatter.removeContainingLine("#import-" + referencedModel.getClassName() + "#",
+                                    model.getTemplateContent()));
                 } else {
                     importDeclaration = importDeclaration.replace("{type}", typeImport);
                     model.setTemplateContent(
@@ -246,15 +249,19 @@ public class CodeGenerator {
         }
     }
 
-    public void generateGlobalDatabaseService(String dbServicePackage, String outputPath, String language, String DAO) throws Exception {
-        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject().get(DAO);
+    public void generateGlobalDatabaseService(String dbServicePackage, String outputPath, String language, String DAO)
+            throws Exception {
+        JsonElement dbServiceElement = DBService.getDBServiceData().get("DAOServiceRequirements").getAsJsonObject()
+                .get(DAO);
         if (!dbServiceElement.isJsonNull()) {
-            String dbServiceType = DBService.getDBServiceData().get("DBServiceType").getAsJsonObject().get(dbServiceElement.getAsString()).getAsString();
+            String dbServiceType = DBService.getDBServiceData().get("DBServiceType").getAsJsonObject()
+                    .get(dbServiceElement.getAsString()).getAsString();
             if (dbServiceType.equals("GLOBAL")) {
-                DBService dbService = new DBService(getModels(), dbServiceElement.getAsString(), dbServicePackage, outputPath, language);
+                DBService dbService = new DBService(getModels(), dbServiceElement.getAsString(), dbServicePackage,
+                        outputPath, language);
                 dbService.loadTemplate();
                 dbService.generate();
-        
+
                 setGlobalDbService(dbService);
             }
         }
@@ -311,7 +318,7 @@ public class CodeGenerator {
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
                             requestMapping, outputPath, dbServicePackage, this);
-                    
+
                     // if we need global db service
                     controller.setDbService(globalDbService);
 
@@ -377,8 +384,8 @@ public class CodeGenerator {
         setDatabaseInformation(config.get("database").getAsJsonObject());
 
         // remove outputPath if exist , not required
+        String projectName = config.get("projectName").getAsString();
         String outputPath = config.get("outputPath").getAsString();
-        // FileUtil.removeDirectory(new File(outputPath));
 
         String language = config.get("language").getAsString();
         String framework = config.get("framework").getAsString();
@@ -389,16 +396,40 @@ public class CodeGenerator {
             DAO = DAOElement.getAsString();
         }
 
+        // Generation du projet de base
+        Boolean generateProjectBase = config.get("withBaseProject").getAsBoolean();
+        if (generateProjectBase) {
+            ProjectBaseGenerator projectBaseGenerator = null;
+
+            switch (framework) {
+                case "spring":
+                    projectBaseGenerator = new SpringBaseGenerator();
+                case ".net":
+                    projectBaseGenerator = new SpringBaseGenerator();
+                default:
+                    break;
+            }
+
+            projectBaseGenerator.generate(config);
+        }
+
+        String classOutputPath = outputPath;
+        String viewOutputPath = outputPath;
+        if (generateProjectBase) {
+            classOutputPath = outputPath + "/" + projectName + "/src/main/java";
+            viewOutputPath = outputPath + "/" + projectName + "/src/main/resources/templates";
+        }
+
         // Generation des code
         System.out.println("GENERATION CODE MODEL");
-        generateModel(language, DAO, outputPath, config.get("model").getAsJsonObject());
+        generateModel(language, DAO, classOutputPath, config.get("model").getAsJsonObject());
 
         System.out.println("\nGENERATION CODE CONTROLLER");
-        generateController(language, framework, DAO, outputPath, config.get("controller").getAsJsonObject());
+        generateController(language, framework, DAO, classOutputPath, config.get("controller").getAsJsonObject());
 
         System.out.println("\nGENERATION CODE VIEW");
         JsonObject data = JsonUtil.toJsonObject("/data/view.json", "IN");
-        generateView(config.get("view").getAsJsonObject(), outputPath, data);
+        generateView(config.get("view").getAsJsonObject(), viewOutputPath, data);
 
     }
 
