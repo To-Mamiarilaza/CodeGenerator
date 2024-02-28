@@ -25,6 +25,7 @@
 - Generation d'un controller avec un foreign key vers un model non généré
 - Toutes les repository doivent se placer dans un meme package pour le moment ( Problème au niveau de l'import controller )
 - Affichage si valeur null ou si valeur foreign key null, ( Problème au niveau du select list, l'elements selectionné ne s'affiche plus pour .net)
+- On doit mettre en variable les classOutputPath et les viewOutputPath pour chaque framework
 
 ### Generation du projet de base :
 #### SPRING :

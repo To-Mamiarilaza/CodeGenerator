@@ -325,26 +325,33 @@ public class View {
                 .get("tr").getAsJsonObject().get(getChoice()).getAsString();
         tr = tr.replace("{variableName}", variableName);
         tr = tr.replace("dataName", dataName);
+        tr = tr.replace("{typeFieldName}", getModel().getFieldName());
+        tr = tr.replace("{pkFieldName}", getModel().getPrimaryKeyFieldName());
         String td = getData().get("page").getAsJsonObject().get("tableLooping").getAsJsonObject()
                 .get("td").getAsJsonObject().get(getChoice()).getAsString();
         String tds = "";
         for (Column c : getTable().getColumns()) {
-            String fieldNameNotCapitalize = WordFormatter.toCamelCase(c.getName());
-            String fieldNameCapitalize = WordFormatter.capitalizeFirstLetter(fieldNameNotCapitalize);
+            String fieldName = WordFormatter.toCamelCase(c.getName());
+
+            if (fieldCase.equals("UPPER")) {
+                fieldName = WordFormatter.capitalizeFirstLetter(fieldName);
+            }
 
             if (c.getForeignKey() != null) {
                 String fkTypeField = WordFormatter.toCamelCase(c.getForeignKey().getTableName());
                 String fkDisplayField = getCodeGenerator().getModelWithName(c.getForeignKey().getTableName())
                         .getDisplayField();
 
-                fieldNameCapitalize = WordFormatter.capitalizeFirstLetter(fkTypeField) + "."
-                        + WordFormatter.capitalizeFirstLetter(fkDisplayField);
-                fieldNameNotCapitalize = fkTypeField + "." + fkDisplayField;
+                fieldName = fkTypeField + "." + fkDisplayField;
+
+                if (fieldCase.equals("UPPER")) {
+                    fieldName = WordFormatter.capitalizeFirstLetter(fkTypeField) + "."
+                            + WordFormatter.capitalizeFirstLetter(fkDisplayField);
+                }
             }
 
             String tdCopy = td;
-            tdCopy = tdCopy.replace("{fieldNameNotCapitalize}", fieldNameNotCapitalize);
-            tdCopy = tdCopy.replace("{fieldNameCapitalize}", fieldNameCapitalize);
+            tdCopy = tdCopy.replace("{fieldName}", fieldName);
             tdCopy = tdCopy.replace("{variableName}", variableName);
             tds += tdCopy;
         }
@@ -352,7 +359,8 @@ public class View {
         tds += getData().get("page").getAsJsonObject().get("listAction")
                 .getAsJsonObject().get(getChoice()).getAsString()
                 .replace("{variableName}", variableName)
-                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName());
+                .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+                .replace("{className}", getModel().getClassName());
 
         tr = tr.replace("{td}", tds);
         this.tableBody = tr;
@@ -416,7 +424,8 @@ public class View {
     }
 
     public void loadListPageTemplate() throws Exception {
-        String listContent = FileUtil.toStringInnerFile("/template/view/list.template");
+        String templateName = getData().get("page").getAsJsonObject().get("listTemplate").getAsJsonObject().get(getChoice()).getAsString();
+        String listContent = FileUtil.toStringInnerFile("/template/view/" + templateName);
         listContent = listContent.replace("#pageImport#", getPageImport());
         listContent = listContent.replace("#pageRequirement#", getPageRequirement("list"));
         listContent = listContent.replace("#htmlRequirement#", getHtmlRequirement());
@@ -427,12 +436,16 @@ public class View {
         listContent = listContent.replace("#tableHead#", getTableHead());
         listContent = listContent.replace("#tableBody#", getTableBody());
         listContent = listContent.replace("#linkList#", getLinkList());
+        listContent = listContent.replace("#className#", getModel().getClassName());
+        listContent = listContent.replace("#typeFieldName#", getModel().getFieldName());
+        listContent = listContent.replace("#pkFieldName#", getModel().getPrimaryKeyFieldName());
 
         setListPageTemplateContent(listContent);
     }
 
     public void loadCreatePageTemplate() throws Exception {
-        String createContent = FileUtil.toStringInnerFile("/template/view/create.template");
+        String templateName = getData().get("page").getAsJsonObject().get("createTemplate").getAsJsonObject().get(getChoice()).getAsString();
+        String createContent = FileUtil.toStringInnerFile("/template/view/" + templateName);
         createContent = createContent.replace("#pageImport#", getPageImport());
         createContent = createContent.replace("#pageRequirement#", getPageRequirement("edit"));
         createContent = createContent.replace("#htmlRequirement#", getHtmlRequirement());
