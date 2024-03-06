@@ -16,7 +16,7 @@
         "tables": [{"name": "*", "package": "Models"}]
     },
     "controller": {
-        "type": "MVC",
+        "type": "REST",
         "dbServicePackage": "Data",
         "tables": [{"name": "*", "package": "Controllers", "requestMapping": "DEFAULT"}]
     },

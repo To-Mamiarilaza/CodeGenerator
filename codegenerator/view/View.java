@@ -272,6 +272,7 @@ public class View {
 
                 formInput += formSelectDeclaration
                         .replace("{fieldName}", fieldName)
+                        .replace("{lowerFieldName}", WordFormatter.firstLetterToLower(fieldName))
                         .replace("{upperFieldName}", upperFieldName)
                         .replace("{upperFieldPk}", upperFieldPk)
                         .replace("{fieldFkDisplay}", fieldFkDisplay)
@@ -296,6 +297,7 @@ public class View {
 
                 formInput += formGroupDeclaration
                         .replace("{fieldName}", fieldName)
+                        .replace("{lowerFieldName}", WordFormatter.firstLetterToLower(fieldName))
                         .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fieldName))
                         .replace("{fieldInputType}", type);
             }
@@ -339,32 +341,24 @@ public class View {
         tr = tr.replace("{variableName}", variableName);
         tr = tr.replace("dataName", dataName);
         tr = tr.replace("{typeFieldName}", getModel().getFieldName());
-        tr = tr.replace("{pkFieldName}", getModel().getPrimaryKeyFieldName());
+        tr = tr.replace("{pkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()));
         String td = getData().get("page").getAsJsonObject().get("tableLooping").getAsJsonObject()
                 .get("td").getAsJsonObject().get(getChoice()).getAsString();
         String tds = "";
         for (Column c : getTable().getColumns()) {
             String fieldName = WordFormatter.toCamelCase(c.getName());
 
-            if (fieldCase.equals("UPPER")) {
-                fieldName = WordFormatter.capitalizeFirstLetter(fieldName);
-            }
-
             if (c.getForeignKey() != null) {
                 String fkTypeField = WordFormatter.toCamelCase(c.getForeignKey().getTableName());
                 String fkDisplayField = getCodeGenerator().getModelWithName(c.getForeignKey().getTableName())
                         .getDisplayField();
 
-                fieldName = fkTypeField + "." + fkDisplayField;
-
-                if (fieldCase.equals("UPPER")) {
-                    fieldName = WordFormatter.capitalizeFirstLetter(fkTypeField) + "."
-                            + WordFormatter.capitalizeFirstLetter(fkDisplayField);
-                }
+                fieldName = WordFormatter.firstLetterToLower(fkTypeField) + "." + WordFormatter.firstLetterToLower(fkDisplayField);
             }
 
             String tdCopy = td;
             tdCopy = tdCopy.replace("{fieldName}", fieldName);
+            tdCopy = tdCopy.replace("{typeFieldName}", getModel().getFieldName());
             tdCopy = tdCopy.replace("{variableName}", variableName);
             tds += tdCopy;
         }
@@ -373,6 +367,8 @@ public class View {
                 .getAsJsonObject().get(getChoice()).getAsString()
                 .replace("{variableName}", variableName)
                 .replace("{pkFieldName}", getModel().getPrimaryKeyFieldName())
+                .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()))
+                .replace("{typeFieldName}", getModel().getFieldName())
                 .replace("{className}", getModel().getClassName());
 
         tr = tr.replace("{td}", tds);
@@ -484,7 +480,7 @@ public class View {
 
             fkElementsFetching += declaration.replace("{fieldName}", fkFieldName)
             .replace("{upperFieldName}", WordFormatter.capitalizeFirstLetter(fkFieldName))
-            .replace("{pkFieldName}", pkFieldName)
+            .replace("{pkFieldName}", WordFormatter.firstLetterToLower(pkFieldName))
             .replace("{upperPkFieldName}", WordFormatter.capitalizeFirstLetter(pkFieldName));
         }
 
@@ -553,6 +549,7 @@ public class View {
             if (column.getForeignKey() != null) {
                 fieldNameKey = WordFormatter.toCamelCase(column.getForeignKey().getTableName());
                 String foreignPk = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getPrimaryKeyFieldName();
+                foreignPk = WordFormatter.firstLetterToLower(foreignPk);
                 fieldNameValue = "{ \n        \"" + foreignPk + "\": " + foreignPk + "\n      }";
             }
 
@@ -580,8 +577,9 @@ public class View {
             String fkDisplayField = getCodeGenerator().getModelWithName(column.getForeignKey().getTableName()).getDisplayField();
 
             fkOptionsRowDisplay += declaration.replace("{fieldName}", fkFieldName)
-            .replace("{fkDisplayField}", fkDisplayField)
-            .replace("{pkFieldName}", pkFieldName);
+            .replace("{fkDisplayField}", WordFormatter.firstLetterToLower(fkDisplayField))
+            .replace("{pkFieldName}", WordFormatter.firstLetterToLower(pkFieldName))
+            .replace("{lowerPkFieldName}", WordFormatter.firstLetterToLower(pkFieldName));
         }
 
         return fkOptionsRowDisplay;
@@ -602,7 +600,9 @@ public class View {
         listContent = listContent.replace("#linkList#", getLinkList());
         listContent = listContent.replace("#className#", getModel().getClassName());
         listContent = listContent.replace("#typeFieldName#", getModel().getFieldName());
+        listContent = listContent.replace("#typeFieldNameUrl#", getModel().getFieldNameUrl());
         listContent = listContent.replace("#pkFieldName#", getModel().getPrimaryKeyFieldName());
+        listContent = listContent.replace("#lowerPkFieldName#", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()));
         listContent = listContent.replace("#apiUrl#", getApiUrl());
 
         setListPageTemplateContent(listContent);
@@ -624,6 +624,7 @@ public class View {
         createContent = createContent.replace("#errorDiv#", getErrorDiv());
         createContent = createContent.replace("#className#", getModel().getClassName());
         createContent = createContent.replace("#typeFieldName#", getModel().getFieldName());
+        createContent = createContent.replace("#typeFieldNameUrl#", getModel().getFieldNameUrl());
 
         // For front end separated technology like react
         createContent = createContent.replace("#fkSelectOptionsState#", getFkSelectOptionsState());

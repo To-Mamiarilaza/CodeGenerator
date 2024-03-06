@@ -55,6 +55,17 @@ public class Table {
     
     /// Methods
 
+    // find not primary key column
+    public List<Column> getAllColumnsWithoutPK() {
+        List<Column> colWitoutPk = new ArrayList<>();
+        for (Column column : colWitoutPk) {
+            if (!column.getIsPrimaryKey()) {
+                colWitoutPk.add(column);
+            }
+        }
+        return colWitoutPk;
+    }
+
     // find column with the given name
     public Column getColumnWithName(String name) {
         for (Column column : columns) {

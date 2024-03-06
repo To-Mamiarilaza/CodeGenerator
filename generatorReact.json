@@ -1,0 +1,30 @@
+{
+    "projectName": "React",
+    "withBaseProject": false,
+    "outputPath": "./ReactView",
+    "database": {
+        "type": "postgresql",
+        "database": "fiche_employe",
+        "host": "localhost",
+        "username": "postgres",
+        "password": "postgres"
+    },
+    "language": "JAVA",
+    "DAO": "JPA",
+    "framework": "spring",
+    "model": {
+        "tables": [{"name": "*", "package": "thymeleaf.model"}]
+    },
+    "controller": {
+        "type": "REST",
+        "dbServicePackage": "thymeleaf.repository",
+        "tables": [{"name": "*", "package": "thymeleaf.controller", "requestMapping": "DEFAULT"}]
+    },
+    "view": {
+        "choice": "react",
+        "package": "" ,
+        "apiUrl": "http://localhost:8080",
+        "tables": [{"name": "*"}]
+    }
+}
+

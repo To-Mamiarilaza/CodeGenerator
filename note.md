@@ -4,6 +4,8 @@
 - Lors du processus de generation, on doit générer tous les models interdépendant ( Foreign Key ), ensuite tous on ne peut générer un controller ou un view si le model de cette entité n'est pas générer.
 - Le output path du projet ne doit pas se terminé avec un "/"
 - On peut utiliser curl pour generer le projet 
+- Lors du generation du projet spring le nom du projet en minuscule est définie comme artifact
+- Le primary key des tables doit etre justement id
 
 ### Avenir :
 - On n'efface pas tous le contenue mais on append comme dans git si on regénère

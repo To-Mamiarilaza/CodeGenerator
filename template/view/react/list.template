@@ -13,7 +13,7 @@ export default function #className#List() {
   const API_BASE_URL = "#apiUrl#";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldName#s").then((response) => {
+    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s").then((response) => {
       set#className#s(response.data);
     }).catch((error) => {
         alert(error)
@@ -21,9 +21,9 @@ export default function #className#List() {
   }, []);
 
   // delete action
-  const delete#className# = (#pkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldName#s/" + #pkFieldName#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#pkFieldName# != #pkFieldName#)
+  const delete#className# = (#lowerPkFieldName#) => {
+    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName#).then((response) => {
+        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
         set#className#s(new#className#sList);
     }).catch((error) => {
         alert(error)

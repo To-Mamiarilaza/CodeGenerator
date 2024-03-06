@@ -17,11 +17,11 @@ public class DotnetBaseGenerator implements ProjectBaseGenerator {
         String outputPath = config.get("outputPath").getAsString();
 
         // Creating the project
-        // Cmd.execute("dotnet new mvc -n " + projectName, new File(outputPath));
+        Cmd.execute("dotnet new mvc -n " + projectName, new File(outputPath));
 
         // Adding all dependencies
-        // Cmd.execute("dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0", new File(outputPath + "/" + projectName));
-        // Cmd.execute("dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 6.0.0", new File(outputPath + "/" + projectName));
+        Cmd.execute("dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0", new File(outputPath + "/" + projectName));
+        Cmd.execute("dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 6.0.0", new File(outputPath + "/" + projectName));
 
         // Add needed appsettings file
         String appSettings = FileUtil.toStringInnerFile("/template/other/appsettings.template");

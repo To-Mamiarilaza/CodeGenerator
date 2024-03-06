@@ -9,6 +9,13 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<DatabaseContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("ApplicationDbContext")));
 
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowOrigin", 
+        builder => builder.WithOrigins("*")
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,6 +32,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.UseCors("AllowOrigin");
 
 app.MapControllerRoute(
     name: "default",

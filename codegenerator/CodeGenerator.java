@@ -406,8 +406,10 @@ public class CodeGenerator {
             switch (framework) {
                 case "spring":
                     projectBaseGenerator = new SpringBaseGenerator();
+                    break;
                 case ".net":
                     projectBaseGenerator = new DotnetBaseGenerator();
+                    break;
                 default:
                     break;
             }

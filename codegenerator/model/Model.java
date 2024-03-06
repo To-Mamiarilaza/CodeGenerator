@@ -239,6 +239,17 @@ public class Model {
         return WordFormatter.firstLetterToLower(getClassName());
     }
 
+    public String getFieldNameUrl() throws Exception {
+        String fieldCase = getModelData().get("fieldCase").getAsJsonObject().get(getLanguage()).getAsString();
+        String fieldNameUrl = getClassName();
+
+        if (fieldCase.equals("LOWER")) {
+            fieldNameUrl = WordFormatter.firstLetterToLower(fieldNameUrl);
+        }
+
+        return fieldNameUrl;
+    }
+
     public String getClassName() {
         String className = WordFormatter.capitalizeFirstLetter(WordFormatter.toCamelCase(getTable().getName()));
         // if (className.endsWith("s")) {
