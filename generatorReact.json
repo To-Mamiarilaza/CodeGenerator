@@ -22,7 +22,7 @@
     },
     "view": {
         "choice": "react",
-        "package": "" ,
+        "package": "view" ,
         "apiUrl": "http://localhost:8080",
         "tables": [{"name": "*"}]
     }

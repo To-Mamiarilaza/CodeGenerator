@@ -1,36 +1,37 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function #className#List() {
+export default function LanguageList() {
   const navigate = useNavigate();
-  const [#typeFieldName#s, set#className#s] = useState([]);
+  const [languages, setLanguages] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(0);
 
-  document.title = "#className#s";
+  document.title = "Languages";
   document.body.style.backgroundColor = "#161616";
 
-  // fetching #typeFieldName#s data
-  const API_BASE_URL = "#apiUrl#";
+  // fetching languages data
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5").then((response) => {
+    axios.get(API_BASE_URL + "/languages?page=" + currentPage + "&size=5").then((response) => {
       if (totalPage === 0) {
         setTotalPage(response.data.totalPages);
       }
 
-      set#className#s(response.data.content);
+      setLanguages(response.data.content);
     }).catch((error) => {
         alert(error)
     });
   }, [currentPage]);
 
   // delete action
-  const delete#className# = (#lowerPkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
-        set#className#s(new#className#sList);
+  const deleteLanguage = (idLanguage) => {
+    axios.delete(API_BASE_URL + "/languages/" + idLanguage).then((response) => {
+        const newLanguagesList = languages.filter(language => language.idLanguage != idLanguage)
+        setLanguages(newLanguagesList);
     }).catch((error) => {
         alert(error)
     })
@@ -44,8 +45,19 @@ export default function #className#List() {
   }
 
   const rows = [];
-  #typeFieldName#s.forEach((#typeFieldName#) => {
-    rows.push(#tableBody#
+  languages.forEach((language) => {
+    rows.push(
+      <tr key={language.idLanguage}>
+        <td>{language.idLanguage}</td>
+        <td>{language.languageName}</td>
+        <td>{language.etat}</td>
+        <td>{language.typeLanguage.typeLanguageName}</td>
+        <td>{language.pays.paysName}</td>
+        <td>
+          <a type="button" onClick={() => navigate("/languages/" + language.idLanguage)}><i className="fas fa-edit mx-3"></i></a>
+          <a type="button" onClick={() => deleteLanguage(language.idLanguage)}><i className="fas text-danger fa-trash mx-3"></i></a>
+        </td>
+      </tr>
     );
   });
 
@@ -78,17 +90,23 @@ export default function #className#List() {
       </nav>
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
-          <h5 className="text-white">#description#</h5>
+          <h5 className="text-white">Liste des languages</h5>
           <button
             className="btn btn-outline-secondary mt-3 px-4"
-            onClick={() => navigate("#createNewLink#")}
+            onClick={() => navigate("/languages/new")}
           >
-            <i className="fas fa-plus me-3"></i>#createNewDescription#
+            <i className="fas fa-plus me-3"></i>Nouvelle language
           </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>
-                <tr>#tableHead#
+                <tr>
+						<th>Id Language </th>
+						<th>Language Name </th>
+						<th>Etat </th>
+						<th>Type Language </th>
+						<th>Pays </th>
+						<th></th>
                 </tr>
               </thead>
               <tbody>

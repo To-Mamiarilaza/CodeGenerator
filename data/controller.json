@@ -12,7 +12,10 @@
                 "org.springframework.http.HttpStatus",
                 "org.springframework.web.bind.annotation.*",
                 "java.util.List",
-                "java.util.Optional"
+                "java.util.Optional",
+                "org.springframework.data.domain.Page",
+                "org.springframework.data.domain.PageRequest",
+                "org.springframework.data.domain.Pageable"
             ],
             "MVC": [
                 "org.springframework.beans.factory.annotation.Autowired",
@@ -114,7 +117,7 @@
             },
             "returnType": {
                 "spring": {
-                    "REST": "ResponseEntity<List<{type}>>",
+                    "REST": "ResponseEntity<Page<{type}>>",
                     "MVC": "String"
                 },
                 ".net": {
@@ -124,7 +127,7 @@
             },
             "declaration": {
                 "spring": {
-                    "REST": "getAll{type}s()",
+                    "REST": "getAll{type}s(@RequestParam(name = \"page\",defaultValue = \"0\") Integer page, @RequestParam(name = \"size\",defaultValue = \"5\") Integer size)",
                     "MVC": "getAll(Model model)"
                 },
                 ".net": {
@@ -134,7 +137,7 @@
             },
             "content": {
                 "spring": {
-                    "REST": "try {\n List<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll();\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                    "REST": "try {\n Pageable pageable = PageRequest.of(page, size);\n Page<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll(pageable);\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
                     "MVC": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}/{typeFieldName}s\";"
                 },
                 ".net": {

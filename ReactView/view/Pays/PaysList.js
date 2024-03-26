@@ -1,36 +1,37 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function #className#List() {
+export default function PaysList() {
   const navigate = useNavigate();
-  const [#typeFieldName#s, set#className#s] = useState([]);
+  const [payss, setPayss] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(0);
 
-  document.title = "#className#s";
+  document.title = "Payss";
   document.body.style.backgroundColor = "#161616";
 
-  // fetching #typeFieldName#s data
-  const API_BASE_URL = "#apiUrl#";
+  // fetching payss data
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5").then((response) => {
+    axios.get(API_BASE_URL + "/payss?page=" + currentPage + "&size=5").then((response) => {
       if (totalPage === 0) {
         setTotalPage(response.data.totalPages);
       }
 
-      set#className#s(response.data.content);
+      setPayss(response.data.content);
     }).catch((error) => {
         alert(error)
     });
   }, [currentPage]);
 
   // delete action
-  const delete#className# = (#lowerPkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
-        set#className#s(new#className#sList);
+  const deletePays = (idPays) => {
+    axios.delete(API_BASE_URL + "/payss/" + idPays).then((response) => {
+        const newPayssList = payss.filter(pays => pays.idPays != idPays)
+        setPayss(newPayssList);
     }).catch((error) => {
         alert(error)
     })
@@ -44,8 +45,16 @@ export default function #className#List() {
   }
 
   const rows = [];
-  #typeFieldName#s.forEach((#typeFieldName#) => {
-    rows.push(#tableBody#
+  payss.forEach((pays) => {
+    rows.push(
+      <tr key={pays.idPays}>
+        <td>{pays.idPays}</td>
+        <td>{pays.paysName}</td>
+        <td>
+          <a type="button" onClick={() => navigate("/payss/" + pays.idPays)}><i className="fas fa-edit mx-3"></i></a>
+          <a type="button" onClick={() => deletePays(pays.idPays)}><i className="fas text-danger fa-trash mx-3"></i></a>
+        </td>
+      </tr>
     );
   });
 
@@ -78,17 +87,20 @@ export default function #className#List() {
       </nav>
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
-          <h5 className="text-white">#description#</h5>
+          <h5 className="text-white">Liste des payss</h5>
           <button
             className="btn btn-outline-secondary mt-3 px-4"
-            onClick={() => navigate("#createNewLink#")}
+            onClick={() => navigate("/payss/new")}
           >
-            <i className="fas fa-plus me-3"></i>#createNewDescription#
+            <i className="fas fa-plus me-3"></i>Nouvelle pays
           </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>
-                <tr>#tableHead#
+                <tr>
+						<th>Id Pays </th>
+						<th>Pays Name </th>
+						<th></th>
                 </tr>
               </thead>
               <tbody>
