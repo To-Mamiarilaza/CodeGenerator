@@ -81,20 +81,20 @@
         "mine": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<input id=\"{fieldName}\" type=\"{fieldInputType}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
         "thymeleaf": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<input id=\"{fieldName}\" type=\"{fieldInputType}\" th:field=\"*{{fieldName}}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
         "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{fieldName}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<input asp-for=\"{fieldName}\" class=\"form-control\" />\n\t\t\t\t\t</div>",
-        "react": "\n              <div class=\"mb-3\">\n                <label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n                <input id=\"{fieldName}\" value={{fieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} type=\"{fieldInputType}\" class=\"form-control\"/>\n              </div>"
+        "react": "\n              <div class=\"mb-3\">\n                <label for=\"{lowerFieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n                <input id=\"{lowerFieldName}\" value={{lowerFieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} type=\"{fieldInputType}\" class=\"form-control\"/>\n              </div>"
       },
       "checkbox": {
         "mine": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
         "thymeleaf": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
         "razor": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" asp-for=\"{fieldName}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" asp-for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
-        "react": "\n              <div class=\"mb-3\">\n                <input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" value={{fieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} />\n                <label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n              </div>"
+        "react": "\n              <div class=\"mb-3\">\n                <input class=\"form-check-input\" type=\"checkbox\" id=\"{lowerFieldName}\" value={{lowerFieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} />\n                <label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n              </div>"
       }
     },
     "formSelect": {
       "mine": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<select id=\"{fieldName}\" class=\"form-select\"> th:field=\"*{{fieldName}.{fieldPk}}\">\n\t\t\t\t\t\t\t<option th:each=\"{fieldName} : ${{fieldName}s}\" th:value=\"${{fieldName}.{fieldPk}}\" th:text=\"${{fieldName}.{fieldFkDisplay}}\"></option>\n\t\t\t\t\t\t</select>\n\t\t\t\t\t</div>",
       "thymeleaf": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t\t<select id=\"{fieldName}\" class=\"form-select\" th:field=\"*{{fieldName}.{fieldPk}}\">\n\t\t\t\t\t\t\t<option th:each=\"{fieldName} : ${{fieldName}s}\" th:value=\"${{fieldName}.{fieldPk}}\" th:text=\"${{fieldName}.{fieldFkDisplay}}\"></option>\n\t\t\t\t\t\t</select>\n\t\t\t\t\t</div>",
       "razor": "\n\t\t\t\t\t<div class=\"mb-3\">\n\t\t\t\t\t\t<label asp-for=\"{upperFieldName}.{upperFieldPk}\" class=\"form-label text-white\"></label>\n\t\t\t\t\t\t<select asp-for=\"{upperFieldName}.{upperFieldPk}\" class=\"form-select\" asp-items=\"ViewBag.{upperFieldName}s\"></select>\n\t\t\t\t\t</div>",
-      "react": "\n              <div class=\"mb-3\">\n                <label for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n                <select id=\"{fieldName}\" class=\"form-select\" onChange={(e) => handle{upperFieldName}SelectChange(e)}>{{fieldName}Rows}</select>\n              </div>"
+      "react": "\n              <div class=\"mb-3\">\n                <label for=\"{lowerFieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n                <select id=\"{lowerFieldName}\" class=\"form-select\" onChange={(e) => handle{upperFieldName}SelectChange(e)}>{{fieldName}Rows}</select>\n              </div>"
     },
     "linkList": {
       "mine": "",
@@ -131,14 +131,14 @@
         "mine": "\n\t\t\t\t\t\t\t<td>${{variableName}.{fieldName}}</td>",
         "thymeleaf": "\n\t\t\t\t\t\t<td>[[${{variableName}.{fieldName}}]]</td>",
         "razor": "\n\t\t\t\t\t\t\t<td>@Html.DisplayFor(modelItem => {variableName}.{fieldName})</td>",
-        "react": "\n        <td>{{variableName}.{fieldName}}</td>"
+        "react": "\n        <td>{{typeFieldName}.{fieldName}}</td>"
       }
     },
     "listAction": {
       "mine": "",
       "thymeleaf": "\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a th:href=\"@{'/{variableName}s/' + ${{variableName}.{pkFieldName}}}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t\t<a th:href=\"@{'/{variableName}s/delete/' + ${{variableName}.{pkFieldName}}}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t\t</td>",
       "razor": "\n\t\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t\t<a asp-action=\"Edit\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas fa-edit mx-3\"></i></a>\n\t\t\t\t\t\t\t\t<a asp-action=\"Delete\" asp-route-id=\"@{variableName}.{pkFieldName}\"><i class=\"fas text-danger fa-trash mx-3\"></i></a>\n\t\t\t\t\t\t\t</td>",
-      "react": "\n        <td>\n          <a type=\"button\" onClick={() => navigate(\"/{variableName}s/\" + {variableName}.{pkFieldName})}><i className=\"fas fa-edit mx-3\"></i></a>\n          <a type=\"button\" onClick={() => delete{className}({variableName}.{pkFieldName})}><i className=\"fas text-danger fa-trash mx-3\"></i></a>\n        </td>"
+      "react": "\n        <td>\n          <a type=\"button\" onClick={() => navigate(\"/{typeFieldName}s/\" + {typeFieldName}.{lowerPkFieldName})}><i className=\"fas fa-edit mx-3\"></i></a>\n          <a type=\"button\" onClick={() => delete{className}({typeFieldName}.{lowerPkFieldName})}><i className=\"fas text-danger fa-trash mx-3\"></i></a>\n        </td>"
     },
     "packagingCase": {
       "thymeleaf": "LOWER",
@@ -198,7 +198,7 @@
       "thymeleaf": "",
       "razor": "",
       "mine": "",
-      "react": "\n\n  const {fieldName}Rows = [];\n  {fieldName}s.forEach(({fieldName}) => {\n    {fieldName}Rows.push(\n      <option value={{fieldName}.{pkFieldName}} selected={{fieldName}.{pkFieldName} === {pkFieldName}}>{{fieldName}.{fkDisplayField}}</option>\n    );\n  });"
+      "react": "\n\n  const {fieldName}Rows = [];\n  {fieldName}s.forEach(({fieldName}) => {\n    {fieldName}Rows.push(\n      <option value={{fieldName}.{pkFieldName}} selected={{fieldName}.{pkFieldName} === {lowerPkFieldName}}>{{fieldName}.{fkDisplayField}}</option>\n    );\n  });"
     }
   },
   "inputMapping": {

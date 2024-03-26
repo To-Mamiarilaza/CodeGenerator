@@ -20,6 +20,7 @@ import codegenerator.controller.Controller;
 import codegenerator.database.*;
 import codegenerator.dbservice.DBService;
 import codegenerator.model.*;
+import codegenerator.project.generator.DotnetBaseGenerator;
 import codegenerator.project.generator.ProjectBaseGenerator;
 import codegenerator.project.generator.SpringBaseGenerator;
 import codegenerator.util.CLIUtil;
@@ -405,8 +406,10 @@ public class CodeGenerator {
             switch (framework) {
                 case "spring":
                     projectBaseGenerator = new SpringBaseGenerator();
+                    break;
                 case ".net":
-                    projectBaseGenerator = new SpringBaseGenerator();
+                    projectBaseGenerator = new DotnetBaseGenerator();
+                    break;
                 default:
                     break;
             }
@@ -417,8 +420,11 @@ public class CodeGenerator {
         String classOutputPath = outputPath;
         String viewOutputPath = outputPath;
         if (generateProjectBase) {
-            classOutputPath = outputPath + "/" + projectName + "/src/main/java";
-            viewOutputPath = outputPath + "/" + projectName + "/src/main/resources/templates";
+            classOutputPath = Model.getModelData().get("classOutputPath").getAsJsonObject().get(framework).getAsString();
+            viewOutputPath = Model.getModelData().get("viewOutputPath").getAsJsonObject().get(framework).getAsString();
+
+            classOutputPath = classOutputPath.replace("{outputPath}", outputPath).replace("{projectName}", projectName);
+            viewOutputPath = viewOutputPath.replace("{outputPath}", outputPath).replace("{projectName}", projectName);
         }
 
         // Generation des code

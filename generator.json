@@ -1,7 +1,7 @@
 {
-    "projectName": "ReactBack",
-    "withBaseProject": false,
-    "outputPath": "./ReactBack",
+    "projectName": "Thymeleaf",
+    "withBaseProject": true,
+    "outputPath": ".",
     "database": {
         "type": "postgresql",
         "database": "fiche_employe",
@@ -21,8 +21,8 @@
         "tables": [{"name": "*", "package": "thymeleaf.controller", "requestMapping": "DEFAULT"}]
     },
     "view": {
-        "choice": "react",
-        "package": "view" ,
+        "choice": "thymeleaf",
+        "package": "" ,
         "apiUrl": "http://localhost:8080",
         "tables": [{"name": "*"}]
     }

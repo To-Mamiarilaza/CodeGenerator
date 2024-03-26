@@ -141,9 +141,7 @@ public class Controller {
 
         if (requestMapping.equals("DEFAULT")) {
             requestMapping = WordFormatter.toCamelCase(getModel().getTable().getName());
-            if (!getModel().getTable().getName().endsWith("s")) {
-                requestMapping = requestMapping + "s";
-            }
+            requestMapping = requestMapping + "s";
         }
         this.requestMapping = "/" + requestMapping;
 

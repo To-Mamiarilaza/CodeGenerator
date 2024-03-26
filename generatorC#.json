@@ -1,5 +1,7 @@
 {
-    "outputPath": "./Razor",
+    "projectName": "DotnetApp",
+    "outputPath": ".",
+    "withBaseProject": true,
     "database": {
         "type": "postgresql",
         "database": "fiche_employe",
@@ -14,13 +16,14 @@
         "tables": [{"name": "*", "package": "Models"}]
     },
     "controller": {
-        "type": "MVC",
+        "type": "REST",
         "dbServicePackage": "Data",
         "tables": [{"name": "*", "package": "Controllers", "requestMapping": "DEFAULT"}]
     },
     "view": {
         "choice": "razor",
         "package": "Views" ,
+        "apiUrl": "",
         "tables": [{"name": "*"}]
     }
 }

@@ -21,7 +21,7 @@ export default function #className#Form() {
 
     if (id !== undefined) {
       axios
-        .get(API_BASE_URL + "/#typeFieldName#s/" + id)
+        .get(API_BASE_URL + "/#typeFieldNameUrl#s/" + id)
         .then((response) => {#fieldValueSetting#
         })
         .catch((error) => {
@@ -40,7 +40,7 @@ export default function #className#Form() {
 
     if (id === undefined) {
       axios
-      .post(API_BASE_URL + "/#typeFieldName#s", new#className#)
+      .post(API_BASE_URL + "/#typeFieldNameUrl#s", new#className#)
         .then((response) => {
           navigate("/#typeFieldName#s");
         })
@@ -49,7 +49,7 @@ export default function #className#Form() {
         });
       } else {
       axios
-        .put(API_BASE_URL + "/#typeFieldName#s/" + id, new#className#)
+        .put(API_BASE_URL + "/#typeFieldNameUrl#s/" + id, new#className#)
         .then((response) => {
           navigate("/#typeFieldName#s");
         })

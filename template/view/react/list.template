@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 export default function #className#List() {
   const navigate = useNavigate();
   const [#typeFieldName#s, set#className#s] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPage, setTotalPage] = useState(0);
 
   document.title = "#className#s";
   document.body.style.backgroundColor = "#161616";
@@ -13,21 +15,32 @@ export default function #className#List() {
   const API_BASE_URL = "#apiUrl#";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldName#s").then((response) => {
-      set#className#s(response.data);
+    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5").then((response) => {
+      if (totalPage === 0) {
+        setTotalPage(response.data.totalPages);
+      }
+
+      set#className#s(response.data.content);
     }).catch((error) => {
         alert(error)
     });
-  }, []);
+  }, [currentPage]);
 
   // delete action
-  const delete#className# = (#pkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldName#s/" + #pkFieldName#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#pkFieldName# != #pkFieldName#)
+  const delete#className# = (#lowerPkFieldName#) => {
+    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName#).then((response) => {
+        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
         set#className#s(new#className#sList);
     }).catch((error) => {
         alert(error)
     })
+  }
+
+  const paginationButtons = []
+  for (let i = 0; i < totalPage; i++) {
+    paginationButtons.push(
+      <li class="page-item"><button class="page-link" onClick={() => setCurrentPage(i)}>{i + 1}</button></li>
+    )
   }
 
   const rows = [];
@@ -82,6 +95,14 @@ export default function #className#List() {
                 {rows}
               </tbody>
             </table>
+
+            <nav aria-label="Page navigation example">
+              <ul class="pagination">
+                <li class="page-item"><button class="page-link" disabled={currentPage === 0} onClick={() => setCurrentPage(currentPage - 1)}>Previous</button></li>
+                {paginationButtons}
+                <li class="page-item"><button class="page-link" disabled={currentPage === totalPage - 1} onClick={() => setCurrentPage(currentPage + 1)}>Next</button></li>
+              </ul>
+            </nav>
           </div>
         </div>
       </div>
