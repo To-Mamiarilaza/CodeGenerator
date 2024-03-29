@@ -35,10 +35,11 @@ public class View {
     private String createPageTemplateContent;
     private String updatePageTemplateContent;
     private String apiUrl;
+    private Boolean withAuth;
     private CodeGenerator codeGenerator; // For getting the FK model
 
     public View(Model model, String choice, String viewPackage, String outputPath, JsonObject data,
-            CodeGenerator codeGenerator, String apiUrl) throws Exception {
+            CodeGenerator codeGenerator, String apiUrl, Boolean withAuth) throws Exception {
         setCodeGenerator(codeGenerator);
         setModel(model);
         setTable(model.getTable());
@@ -57,6 +58,7 @@ public class View {
         setErrorDiv();
         setLinkList();
         setApiUrl(apiUrl);
+        setWithAuth(withAuth);
     }
 
     public Table getTable() {
@@ -148,6 +150,14 @@ public class View {
                 .get(getChoice()).getAsString();
         String fileName = WordFormatter.toCamelCase(getModel().getClassName()) + fileExtension;
         this.fileName = fileName;
+    }
+
+    public Boolean getWithAuth() {
+        return withAuth;
+    }
+
+    public void setWithAuth(Boolean withAuth) {
+        this.withAuth = withAuth;
     }
 
     public String getPageFileName(String targetPage) {
@@ -484,6 +494,14 @@ public class View {
             .replace("{upperPkFieldName}", WordFormatter.capitalizeFirstLetter(pkFieldName));
         }
 
+        if (withAuth) {
+            String errorCatching = getData().get("authChecking").getAsJsonObject().get(getChoice()).getAsJsonObject().get("errorCatch").getAsString();
+            errorCatching = errorCatching.replace("#TAB#", "      ");
+            fkElementsFetching = fkElementsFetching.replace("#ErrorCatching#", errorCatching);
+        } else {
+            fkElementsFetching = fkElementsFetching.replace("#ErrorCatching#", "");
+        }
+
         return fkElementsFetching;
     }
 
@@ -605,7 +623,21 @@ public class View {
         listContent = listContent.replace("#lowerPkFieldName#", WordFormatter.firstLetterToLower(getModel().getPrimaryKeyFieldName()));
         listContent = listContent.replace("#apiUrl#", getApiUrl());
 
+        // Adding authentification verification
+        String authorization = getData().get("authChecking").getAsJsonObject().get(getChoice()).getAsJsonObject().get("authCheck").getAsString();
+        String errorCatching = getData().get("authChecking").getAsJsonObject().get(getChoice()).getAsJsonObject().get("errorCatch").getAsString();
+        errorCatching = errorCatching.replace("#TAB#", "      ");     // For a good code format
+
+        if (withAuth) {
+            listContent = listContent.replace("#Authorization#", authorization);
+            listContent = listContent.replace("#ErrorCatching#", errorCatching);
+        } else {
+            listContent = listContent.replace("#Authorization#", "");
+            listContent = listContent.replace("#ErrorCatching#", "");
+        }
+
         setListPageTemplateContent(listContent);
+
     }
 
     public void loadCreatePageTemplate() throws Exception {
@@ -635,6 +667,20 @@ public class View {
         createContent = createContent.replace("#objectJsonTemplate#", getObjectJsonTemplate());
         createContent = createContent.replace("#apiUrl#", getApiUrl());
         createContent = createContent.replace("#fkOptionsRowDisplay#", getFkOptionsRowDisplay());
+
+        // Adding authentification verification
+        String authorization = getData().get("authChecking").getAsJsonObject().get(getChoice()).getAsJsonObject().get("authCheck").getAsString();
+        String errorCatching = getData().get("authChecking").getAsJsonObject().get(getChoice()).getAsJsonObject().get("errorCatch").getAsString();
+        errorCatching = errorCatching.replace("#TAB#", "          ");
+
+        if (withAuth) {
+            createContent = createContent.replace("#Authorization#", authorization);
+            createContent = createContent.replace("#ErrorCatching#", errorCatching);
+        } else {
+            createContent = createContent.replace("#Authorization#", "");
+            createContent = createContent.replace("#ErrorCatching#", "");
+
+        }
 
         setCreatePageTemplateContent(createContent);
     }

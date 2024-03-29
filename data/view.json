@@ -12,6 +12,32 @@
       "razor": "mvc/create.template",
       "react": "react/create.template"
     },
+    "mappingView": {
+      "mine": {
+        "template": "",
+        "filename": "",
+        "routing": "",
+        "import": ""
+      },
+      "thymeleaf": {
+        "template": "",
+        "filename": "",
+        "routing": "",
+        "import": ""
+      },
+      "razor": {
+        "template": "",
+        "filename": "",
+        "routing": "",
+        "import": ""
+      },
+      "react": {
+        "template": "react/app.js.template",
+        "pageName": "App.js",
+        "routing": "\n        <Route path=\"{urlMapping}\" exact Component={{pageName}} />",
+        "import": "import {pageName} from \"./pages/{pageDirectory}\";\n"
+      }
+    },
     "fileExtension": {
       "mine": ".jsp",
       "thymeleaf": ".html",
@@ -174,7 +200,7 @@
       "thymeleaf": "",
       "razor": "",
       "mine": "",
-      "react": "\n    axios.get(API_BASE_URL + \"/{fieldName}s\")\n    .then((response) => {\n      set{upperFieldName}s(response.data)\n      if(response.data.length > 0) {\n        set{upperPkFieldName}(response.data[0].{pkFieldName})\n      }\n    })\n    .catch((error) => {\n      alert(error)\n    })\n"
+      "react": "\n    axios.get(API_BASE_URL + \"/{fieldName}s\"#Authorization#)\n    .then((response) => {\n      set{upperFieldName}s(response.data.content)\n      if(response.data.content.length > 0) {\n        set{upperPkFieldName}(response.data.content[0].{pkFieldName})\n      }\n    })\n    .catch((error) => {#ErrorCatching#\n    })\n"
     },
     "fieldValueSetting": {
       "thymeleaf": "",
@@ -213,5 +239,49 @@
     "datetime": "datetime-local",
     "timestamp": "date-time-local",
     "bool": "checkbox"
+  },
+  "authentification": {
+    "thymeleaf": {
+      "loginPageTemplate": "",
+      "loginPageName": "",
+      "signupPageTemplate": "",
+      "signupPageName": ""
+    },
+    "razor": {
+      "loginPageTemplate": "",
+      "loginPageName": "",
+      "signupPageTemplate": "",
+      "signupPageName": ""
+    },
+    "mine": {
+      "loginPageTemplate": "",
+      "loginPageName": "",
+      "signupPageTemplate": "",
+      "signupPageName": ""
+    },
+    "react": {
+      "loginPageTemplate": "react.login.page.template",
+      "loginPageName": "Login.js",
+      "signupPageTemplate": "react.signup.page.template",
+      "signupPageName": "Signup.js"
+    }
+  },
+  "authChecking": {
+    "thymeleaf": {
+      "authCheck": "",
+      "errorCatch": ""
+    },
+    "razor": {
+      "authCheck": "",
+      "errorCatch": ""
+    },
+    "mine": {
+      "authCheck": "",
+      "errorCatch": ""
+    },
+    "react": {
+      "authCheck": ", {headers: {\"Authorization\": \"Bearer \" + localStorage.getItem(\"apktoken\")}}",
+      "errorCatch": "\n#TAB#if (error.response.status === 401) {\n#TAB#  localStorage.removeItem(\"apktoken\");\n#TAB#  navigate('/login');\n#TAB#}"
+    }
   }
 }

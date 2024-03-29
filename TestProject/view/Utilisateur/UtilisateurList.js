@@ -1,36 +1,37 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function #className#List() {
+export default function UtilisateurList() {
   const navigate = useNavigate();
-  const [#typeFieldName#s, set#className#s] = useState([]);
+  const [utilisateurs, setUtilisateurs] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(0);
 
-  document.title = "#className#s";
+  document.title = "Utilisateurs";
   document.body.style.backgroundColor = "#161616";
 
-  // fetching #typeFieldName#s data
-  const API_BASE_URL = "#apiUrl#";
+  // fetching utilisateurs data
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5"#Authorization#).then((response) => {
+    axios.get(API_BASE_URL + "/utilisateurs?page=" + currentPage + "&size=5").then((response) => {
       if (totalPage === 0) {
         setTotalPage(response.data.totalPages);
       }
 
-      set#className#s(response.data.content);
-    }).catch((error) => {#ErrorCatching#
+      setUtilisateurs(response.data.content);
+    }).catch((error) => {
     });
   }, [currentPage]);
 
   // delete action
-  const delete#className# = (#lowerPkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName##Authorization#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
-        set#className#s(new#className#sList);
-    }).catch((error) => {#ErrorCatching#
+  const deleteUtilisateur = (idUtilisateur) => {
+    axios.delete(API_BASE_URL + "/utilisateurs/" + idUtilisateur).then((response) => {
+        const newUtilisateursList = utilisateurs.filter(utilisateur => utilisateur.idUtilisateur != idUtilisateur)
+        setUtilisateurs(newUtilisateursList);
+    }).catch((error) => {
     })
   }
 
@@ -42,8 +43,17 @@ export default function #className#List() {
   }
 
   const rows = [];
-  #typeFieldName#s.forEach((#typeFieldName#) => {
-    rows.push(#tableBody#
+  utilisateurs.forEach((utilisateur) => {
+    rows.push(
+      <tr key={utilisateur.idUtilisateur}>
+        <td>{utilisateur.idUtilisateur}</td>
+        <td>{utilisateur.username}</td>
+        <td>{utilisateur.password}</td>
+        <td>
+          <a type="button" onClick={() => navigate("/utilisateurs/" + utilisateur.idUtilisateur)}><i className="fas fa-edit mx-3"></i></a>
+          <a type="button" onClick={() => deleteUtilisateur(utilisateur.idUtilisateur)}><i className="fas text-danger fa-trash mx-3"></i></a>
+        </td>
+      </tr>
     );
   });
 
@@ -76,17 +86,21 @@ export default function #className#List() {
       </nav>
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
-          <h5 className="text-white">#description#</h5>
+          <h5 className="text-white">Liste des utilisateurs</h5>
           <button
             className="btn btn-outline-secondary mt-3 px-4"
-            onClick={() => navigate("#createNewLink#")}
+            onClick={() => navigate("/utilisateurs/new")}
           >
-            <i className="fas fa-plus me-3"></i>#createNewDescription#
+            <i className="fas fa-plus me-3"></i>Nouvelle utilisateur
           </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>
-                <tr>#tableHead#
+                <tr>
+						<th>Id Utilisateur </th>
+						<th>Username </th>
+						<th>Password </th>
+						<th></th>
                 </tr>
               </thead>
               <tbody>

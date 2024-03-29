@@ -24,8 +24,10 @@
 - Toutes les repository doivent se placer dans un meme package pour le moment ( Problème au niveau de l'import controller )
 - On doit mettre en variable les classOutputPath et les viewOutputPath pour chaque framework
 - Input react et le checkbox
+- Pour le moment, ce générateur ne vas pas toujours marcher comme prévus si on génère les tables un par un ( !! Packaging des classes ) 
 
 ### A Faire prochainement :
 - Checkbox input de react et gestion table avec s a la fin ( CORS )
 - Preparation livraison
 - Creation du projet react
+- Le packaging libre est la source de difficulté, si on impose les packages on peut améliorer beaucoup de chose

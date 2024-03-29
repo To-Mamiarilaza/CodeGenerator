@@ -1,36 +1,45 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function #className#List() {
+export default function TypeLanguageList() {
   const navigate = useNavigate();
-  const [#typeFieldName#s, set#className#s] = useState([]);
+  const [typeLanguages, setTypeLanguages] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(0);
 
-  document.title = "#className#s";
+  document.title = "TypeLanguages";
   document.body.style.backgroundColor = "#161616";
 
-  // fetching #typeFieldName#s data
-  const API_BASE_URL = "#apiUrl#";
+  // fetching typeLanguages data
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5"#Authorization#).then((response) => {
+    axios.get(API_BASE_URL + "/typeLanguages?page=" + currentPage + "&size=5", {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}}).then((response) => {
       if (totalPage === 0) {
         setTotalPage(response.data.totalPages);
       }
 
-      set#className#s(response.data.content);
-    }).catch((error) => {#ErrorCatching#
+      setTypeLanguages(response.data.content);
+    }).catch((error) => {
+      if (error.response.status === 401) {
+        localStorage.removeItem("apktoken");
+        navigate('/login');
+      }
     });
   }, [currentPage]);
 
   // delete action
-  const delete#className# = (#lowerPkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName##Authorization#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
-        set#className#s(new#className#sList);
-    }).catch((error) => {#ErrorCatching#
+  const deleteTypeLanguage = (idTypeLanguage) => {
+    axios.delete(API_BASE_URL + "/typeLanguages/" + idTypeLanguage, {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}}).then((response) => {
+        const newTypeLanguagesList = typeLanguages.filter(typeLanguage => typeLanguage.idTypeLanguage != idTypeLanguage)
+        setTypeLanguages(newTypeLanguagesList);
+    }).catch((error) => {
+      if (error.response.status === 401) {
+        localStorage.removeItem("apktoken");
+        navigate('/login');
+      }
     })
   }
 
@@ -42,8 +51,17 @@ export default function #className#List() {
   }
 
   const rows = [];
-  #typeFieldName#s.forEach((#typeFieldName#) => {
-    rows.push(#tableBody#
+  typeLanguages.forEach((typeLanguage) => {
+    rows.push(
+      <tr key={typeLanguage.idTypeLanguage}>
+        <td>{typeLanguage.idTypeLanguage}</td>
+        <td>{typeLanguage.typeLanguageName}</td>
+        <td>{typeLanguage.status}</td>
+        <td>
+          <a type="button" onClick={() => navigate("/typeLanguages/" + typeLanguage.idTypeLanguage)}><i className="fas fa-edit mx-3"></i></a>
+          <a type="button" onClick={() => deleteTypeLanguage(typeLanguage.idTypeLanguage)}><i className="fas text-danger fa-trash mx-3"></i></a>
+        </td>
+      </tr>
     );
   });
 
@@ -76,17 +94,21 @@ export default function #className#List() {
       </nav>
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
-          <h5 className="text-white">#description#</h5>
+          <h5 className="text-white">Liste des typeLanguages</h5>
           <button
             className="btn btn-outline-secondary mt-3 px-4"
-            onClick={() => navigate("#createNewLink#")}
+            onClick={() => navigate("/typeLanguages/new")}
           >
-            <i className="fas fa-plus me-3"></i>#createNewDescription#
+            <i className="fas fa-plus me-3"></i>Nouvelle typeLanguage
           </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>
-                <tr>#tableHead#
+                <tr>
+						<th>Id Type Language </th>
+						<th>Type Language Name </th>
+						<th>Status </th>
+						<th></th>
                 </tr>
               </thead>
               <tbody>

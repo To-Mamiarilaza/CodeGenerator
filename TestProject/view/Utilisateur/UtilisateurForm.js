@@ -1,64 +1,74 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-export default function #className#Form() {
+export default function UtilisateurForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [error, setError] = useState(null);
-  #fkSelectOptionsState#
-  #fieldValueState#
+  
+  
+  const [idUtilisateur, setIdUtilisateur] = useState();
+  const [username, setUsername] = useState();
+  const [password, setPassword] = useState();
 
-  document.title = "Nouvelle #className#";
+  document.title = "Nouvelle Utilisateur";
   document.body.style.backgroundColor = "#161616";
 
-  // #typeFieldName#s data api url
-  const API_BASE_URL = "#apiUrl#";
+  // utilisateurs data api url
+  const API_BASE_URL = "http://localhost:8080";
 
-  // fetching all foreign key and #typeFieldName# if edit
+  // fetching all foreign key and utilisateur if edit
   useEffect(() => {
-    #fkElementsFetching#
+    
 
     if (id !== undefined) {
       axios
-        .get(API_BASE_URL + "/#typeFieldNameUrl#s/" + id#Authorization#)
-        .then((response) => {#fieldValueSetting#
+        .get(API_BASE_URL + "/utilisateurs/" + id)
+        .then((response) => {
+          setIdUtilisateur(response.data.idUtilisateur);
+          setUsername(response.data.username);
+          setPassword(response.data.password);
         })
-        .catch((error) => {#ErrorCatching#
+        .catch((error) => {
           setError(error.message);
         });
     }
   }, []);
-  #handleFkSelectOptionsChange#
+  
 
-  // save the #typeFieldName#
-  const save#className# = (e) => {
+  // save the utilisateur
+  const saveUtilisateur = (e) => {
     e.preventDefault();
 
-    const new#className# = {#objectJsonTemplate#
+    const newUtilisateur = {
+      "idUtilisateur": idUtilisateur,
+      "username": username,
+      "password": password
     };
 
     if (id === undefined) {
       axios
-      .post(API_BASE_URL + "/#typeFieldNameUrl#s", new#className##Authorization#)
+      .post(API_BASE_URL + "/utilisateurs", newUtilisateur)
         .then((response) => {
-          navigate("/#typeFieldName#s");
+          navigate("/utilisateurs");
         })
-        .catch((error) => {#ErrorCatching#
+        .catch((error) => {
           setError(error.message);
         });
       } else {
       axios
-        .put(API_BASE_URL + "/#typeFieldNameUrl#s/" + id, new#className##Authorization#)
+        .put(API_BASE_URL + "/utilisateurs/" + id, newUtilisateur)
         .then((response) => {
-          navigate("/#typeFieldName#s");
+          navigate("/utilisateurs");
         })
-        .catch((error) => {#ErrorCatching#
+        .catch((error) => {
           setError(error.message);
         });
     }
   };
-  #fkOptionsRowDisplay#
+  
 
   return (
     <>
@@ -90,9 +100,17 @@ export default function #className#Form() {
 
       <div class="container mt-4" data-bs-theme="dark">
         <div class="mx-auto col-md-8 px-3 mb-4">
-          <h4 class="text-white">Nouvelle #typeFieldName#</h4>
+          <h4 class="text-white">Nouvelle utilisateur</h4>
           <div class="form">
-            <form>#formInput#
+            <form>
+              <div class="mb-3">
+                <label for="username" class="form-label text-white">Username</label>
+                <input id="username" value={username} onChange={(e) => setUsername(e.target.value)} type="text" class="form-control"/>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label text-white">Password</label>
+                <input id="password" value={password} onChange={(e) => setPassword(e.target.value)} type="text" class="form-control"/>
+              </div>
 
               { error !== null && (
                 <div class="mb-3">
@@ -105,13 +123,13 @@ export default function #className#Form() {
               <div class="d-flex mt-4">
                 <button
                   class="btn btn-outline-info px-5 me-3"
-                  onClick={(e) => save#className#(e)}
+                  onClick={(e) => saveUtilisateur(e)}
                 >
                   Enregistrer
                 </button>
                 <button
                   class="btn btn-outline-light px-5"
-                  onClick={() => navigate("/#typeFieldName#s")}
+                  onClick={() => navigate("/utilisateurs")}
                 >
                   Retour
                 </button>

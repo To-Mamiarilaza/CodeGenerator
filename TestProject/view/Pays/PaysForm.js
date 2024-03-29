@@ -1,64 +1,83 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-export default function #className#Form() {
+export default function PaysForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [error, setError] = useState(null);
-  #fkSelectOptionsState#
-  #fieldValueState#
+  
+  
+  const [idPays, setIdPays] = useState();
+  const [paysName, setPaysName] = useState();
 
-  document.title = "Nouvelle #className#";
+  document.title = "Nouvelle Pays";
   document.body.style.backgroundColor = "#161616";
 
-  // #typeFieldName#s data api url
-  const API_BASE_URL = "#apiUrl#";
+  // payss data api url
+  const API_BASE_URL = "http://localhost:8080";
 
-  // fetching all foreign key and #typeFieldName# if edit
+  // fetching all foreign key and pays if edit
   useEffect(() => {
-    #fkElementsFetching#
+    
 
     if (id !== undefined) {
       axios
-        .get(API_BASE_URL + "/#typeFieldNameUrl#s/" + id#Authorization#)
-        .then((response) => {#fieldValueSetting#
+        .get(API_BASE_URL + "/payss/" + id, {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}})
+        .then((response) => {
+          setIdPays(response.data.idPays);
+          setPaysName(response.data.paysName);
         })
-        .catch((error) => {#ErrorCatching#
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.removeItem("apktoken");
+            navigate('/login');
+          }
           setError(error.message);
         });
     }
   }, []);
-  #handleFkSelectOptionsChange#
+  
 
-  // save the #typeFieldName#
-  const save#className# = (e) => {
+  // save the pays
+  const savePays = (e) => {
     e.preventDefault();
 
-    const new#className# = {#objectJsonTemplate#
+    const newPays = {
+      "idPays": idPays,
+      "paysName": paysName
     };
 
     if (id === undefined) {
       axios
-      .post(API_BASE_URL + "/#typeFieldNameUrl#s", new#className##Authorization#)
+      .post(API_BASE_URL + "/payss", newPays, {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}})
         .then((response) => {
-          navigate("/#typeFieldName#s");
+          navigate("/payss");
         })
-        .catch((error) => {#ErrorCatching#
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.removeItem("apktoken");
+            navigate('/login');
+          }
           setError(error.message);
         });
       } else {
       axios
-        .put(API_BASE_URL + "/#typeFieldNameUrl#s/" + id, new#className##Authorization#)
+        .put(API_BASE_URL + "/payss/" + id, newPays, {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}})
         .then((response) => {
-          navigate("/#typeFieldName#s");
+          navigate("/payss");
         })
-        .catch((error) => {#ErrorCatching#
+        .catch((error) => {
+          if (error.response.status === 401) {
+            localStorage.removeItem("apktoken");
+            navigate('/login');
+          }
           setError(error.message);
         });
     }
   };
-  #fkOptionsRowDisplay#
+  
 
   return (
     <>
@@ -90,9 +109,13 @@ export default function #className#Form() {
 
       <div class="container mt-4" data-bs-theme="dark">
         <div class="mx-auto col-md-8 px-3 mb-4">
-          <h4 class="text-white">Nouvelle #typeFieldName#</h4>
+          <h4 class="text-white">Nouvelle pays</h4>
           <div class="form">
-            <form>#formInput#
+            <form>
+              <div class="mb-3">
+                <label for="paysName" class="form-label text-white">PaysName</label>
+                <input id="paysName" value={paysName} onChange={(e) => setPaysName(e.target.value)} type="text" class="form-control"/>
+              </div>
 
               { error !== null && (
                 <div class="mb-3">
@@ -105,13 +128,13 @@ export default function #className#Form() {
               <div class="d-flex mt-4">
                 <button
                   class="btn btn-outline-info px-5 me-3"
-                  onClick={(e) => save#className#(e)}
+                  onClick={(e) => savePays(e)}
                 >
                   Enregistrer
                 </button>
                 <button
                   class="btn btn-outline-light px-5"
-                  onClick={() => navigate("/#typeFieldName#s")}
+                  onClick={() => navigate("/payss")}
                 >
                   Retour
                 </button>

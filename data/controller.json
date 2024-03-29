@@ -39,6 +39,41 @@
             ]
         }
     },
+    "authRequiredImport": {
+        "spring": {
+            "REST": [
+                "#ExceptionPackage#.NotAuthorizedException",
+                "jakarta.servlet.http.HttpServletRequest"
+            ],
+            "MVC": []
+        },
+        ".net": {
+            "REST": [],
+            "MVC": []
+        }
+    },
+    "authentification": {
+        "spring": {
+            "authControllerTemplate": "java.auth.controller.template",
+            "authControllerFileName": "AuthController.java",
+            "authUtilTemplate": "java.auth.util.template",
+            "authUtilFileName": "JWTToken.java",
+            "userRepositoryTemplate": "java.auth.repository.template",
+            "userRepositoryName": "UtilisateurRepository.java",
+            "customExceptionTemplate": "java.auth.exception.template",
+            "customExceptionName": "NotAuthorizedException.java"
+        },
+        ".net": {
+            "authControllerTemplate": "",
+            "authControllerFileName": "",
+            "authUtilTemplate": "",
+            "authUtilFileName": "",
+            "userRepositoryTemplate": "",
+            "userRepositoryName": "",
+            "customExceptionTemplate": "",
+            "customExceptionName": ""
+        }
+    },
     "classAnnotation": {
         "spring": {
             "REST": "@RestController\n@RequestMapping(\"{requestMapping}\")\n@CrossOrigin(origins = \"*\", allowedHeaders = \"*\")",
@@ -127,22 +162,46 @@
             },
             "declaration": {
                 "spring": {
-                    "REST": "getAll{type}s(@RequestParam(name = \"page\",defaultValue = \"0\") Integer page, @RequestParam(name = \"size\",defaultValue = \"5\") Integer size)",
-                    "MVC": "getAll(Model model)"
+                    "REST": {
+                        "noAuth": "getAll{type}s(@RequestParam(name = \"page\",defaultValue = \"0\") Integer page, @RequestParam(name = \"size\",defaultValue = \"5\") Integer size)",
+                        "withAuth": "getAll{type}s(@RequestParam(name = \"page\",defaultValue = \"0\") Integer page, @RequestParam(name = \"size\",defaultValue = \"5\") Integer size, HttpServletRequest request)"
+                    },
+                    "MVC": {
+                        "noAuth": "getAll(Model model)",
+                        "withAuth": "getAll(Model model)"
+                    }
                 },
                 ".net": {
-                    "REST": "GetAll{type}s()",
-                    "MVC": "Index()"
+                    "REST": {
+                        "noAuth": "GetAll{type}s()",
+                        "withAuth": "GetAll{type}s()"
+                    },
+                    "MVC": {
+                        "noAuth": "Index()",
+                        "withAuth": "Index()"
+                    }
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "try {\n Pageable pageable = PageRequest.of(page, size);\n Page<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll(pageable);\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}/{typeFieldName}s\";"
+                    "REST": {
+                        "noAuth": "try {\n Pageable pageable = PageRequest.of(page, size);\n Page<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll(pageable);\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                        "withAuth": "try {\n JWTToken.checkBearer(request);\n Pageable pageable = PageRequest.of(page, size);\n Page<{type}> {typeFieldName}s = {dbServiceFieldName}.findAll(pageable);\n if ({typeFieldName}s.isEmpty()) {\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n return new ResponseEntity<>({typeFieldName}s, HttpStatus.OK);\n }\n catch(NotAuthorizedException e) {\n return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);\n } \n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }"
+                    },
+                    "MVC": {
+                        "noAuth":"try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}/{typeFieldName}s\";",
+                        "withAuth": "try {\n List<{type}> {typeFieldName}s = new ArrayList<{type}>();\n {dbServiceFieldName}.findAll().forEach({typeFieldName}s::add);\n\n model.addAttribute(\"{typeFieldName}s\", {typeFieldName}s);\n }\n catch (Exception e) {\n      e.printStackTrace();\n    }\n\n    return \"{typeFieldName}/{typeFieldName}s\";"
+                    }
                 },
                 ".net": {
-                    "REST": "return await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync();",
-                    "MVC": "return View(await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync());"
+                    "REST": {
+                        "noAuth": "return await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync();",
+                        "withAuth": "return await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync();"
+                    },
+                    "MVC": {
+                        "noAuth": "return View(await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync());",
+                        "withAuth": "return View(await _{dbServiceFieldName}.{type}s.{FKIncludes}ToListAsync());"
+                    }
                 }
             }
         },
@@ -169,22 +228,46 @@
             },
             "declaration": {
                 "spring": {
-                    "REST": "get{type}ById(@PathVariable {pkFieldType} {lowerPkFieldName})",
-                    "MVC": "edit{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)"
+                    "REST": {
+                        "noAuth": "get{type}ById(@PathVariable {pkFieldType} {lowerPkFieldName})",
+                        "withAuth": "get{type}ById(@PathVariable {pkFieldType} {lowerPkFieldName}, HttpServletRequest request)"
+                    },
+                    "MVC": {
+                        "noAuth": "edit{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)",
+                        "withAuth": "edit{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)"
+                    }
                 },
                 ".net": {
-                    "REST": "Get{type}ById({pkFieldType} {lowerPkFieldName})",
-                    "MVC": "Edit({pkFieldType}? id)"
+                    "REST": {
+                        "noAuth": "Get{type}ById({pkFieldType} {lowerPkFieldName})",
+                        "withAuth": "Get{type}ById({pkFieldType} {lowerPkFieldName})"
+                    },
+                    "MVC": {
+                        "noAuth": "Edit({pkFieldType}? id)",
+                        "withAuth": "Edit({pkFieldType}? id)" 
+                    }
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({typeFieldName}Data.get(), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }",
-                    "MVC": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      {FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
+                    "REST": {
+                        "noAuth": "Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({typeFieldName}Data.get(), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }",
+                        "withAuth": "try { \n JWTToken.checkBearer(request);\n } catch(NotAuthorizedException e) {\n return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);\n }\n Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({typeFieldName}Data.get(), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }"
+                    },
+                    "MVC": {
+                        "noAuth": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      {FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }",
+                        "withAuth": "try {\n      {type} {typeFieldName} = {dbServiceFieldName}.findById({lowerPkFieldName}).get();\n\n      {FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\n      model.addAttribute(\"pageTitle\", \"Edit {type}\");\n\n      return \"{typeFieldName}/{typeFieldName}_form\";\n    }\n catch (Exception e) {\n      e.printStackTrace();\n return \"redirect:/{typeFieldName}s\";\n   }"
+                    }
                 },
                 ".net": {
-                    "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == {lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
-                    "MVC":"if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n{FKSelectOptions}return View(\"{type}Form\", {typeFieldName});"
+                    "REST": {
+                        "noAuth": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == {lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};",
+                        "withAuth": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == {lowerPkFieldName});\n\n if({typeFieldName} == null) {\n return NotFound();\n }\n\nreturn {typeFieldName};"
+                    },
+                    "MVC": {
+                        "noAuth": "if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n{FKSelectOptions}return View(\"{type}Form\", {typeFieldName});",
+                        "withAuth": "if (id == null)\n {\n return NotFound();\n }\n var {typeFieldName} = await _{dbServiceFieldName}.{type}s.{FKIncludes}FirstOrDefaultAsync({objectFirstLetter} => {objectFirstLetter}.{pkFieldName} == id);\n if({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n{FKSelectOptions}return View(\"{type}Form\", {typeFieldName});"
+                    }
                 }
             }
         },
@@ -211,22 +294,46 @@
             },
             "declaration": {
                 "spring": {
-                    "REST": "create{type}(@RequestBody {type} {typeFieldName})",
-                    "MVC": "add{type}(Model model)"
+                    "REST": {
+                        "noAuth": "create{type}(@RequestBody {type} {typeFieldName})",
+                        "withAuth": "create{type}(@RequestBody {type} {typeFieldName}, HttpServletRequest request)"
+                    },
+                    "MVC": {
+                        "noAuth": "add{type}(Model model)",
+                        "withAuth": "add{type}(Model model)"
+                    }
                 },
                 ".net": {
-                    "REST": "Create{type}({type} {typeFieldName})",
-                    "MVC": "Create()"
+                    "REST": {
+                        "noAuth": "Create{type}({type} {typeFieldName})",
+                        "withAuth": "Create{type}({type} {typeFieldName})"
+                    },
+                    "MVC": {
+                        "noAuth": "Create()",
+                        "withAuth": "Create()"
+                    }
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "try {\n {type} _{typeFieldName} = {dbServiceFieldName}.save({typeFieldName});\n return new ResponseEntity<>(_{typeFieldName}, HttpStatus.CREATED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "{type} {typeFieldName} = new {type}();\n\n{FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";"
+                    "REST": {
+                        "noAuth": "try {\n {type} _{typeFieldName} = {dbServiceFieldName}.save({typeFieldName});\n return new ResponseEntity<>(_{typeFieldName}, HttpStatus.CREATED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                        "withAuth": "try {\n JWTToken.checkBearer(request);\n {type} _{typeFieldName} = {dbServiceFieldName}.save({typeFieldName});\n return new ResponseEntity<>(_{typeFieldName}, HttpStatus.CREATED);\n }\n catch(NotAuthorizedException e) {\n return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }"
+                    },
+                    "MVC": {
+                        "noAuth": "{type} {typeFieldName} = new {type}();\n\n{FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";",
+                        "withAuth": "{type} {typeFieldName} = new {type}();\n\n{FKSelectOptions}model.addAttribute(\"{typeFieldName}\", {typeFieldName});\nmodel.addAttribute(\"pageTitle\", \"Create new {type}\");\n\nreturn \"{typeFieldName}/{typeFieldName}_form\";"
+                    }
                 },
                 ".net": {
-                    "REST": "{FKEntityStateParameters}_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
-                    "MVC":"{FKSelectOptions}return View(\"{type}Form\");"
+                    "REST": {
+                        "noAuth": "{FKEntityStateParameters}_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});",
+                        "withAuth": "{FKEntityStateParameters}_{dbServiceFieldName}.{type}s.Add({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn CreatedAtAction(nameof(Get{type}ById), new { {lowerPkFieldName} = {typeFieldName}.{pkFieldName} }, {typeFieldName});"
+                    },
+                    "MVC": {
+                        "noAuth": "{FKSelectOptions}return View(\"{type}Form\");",
+                        "withAuth": "{FKSelectOptions}return View(\"{type}Form\");"
+                    }
                 }
             }
         },
@@ -253,22 +360,46 @@
             },
             "declaration": {
                 "spring": {
-                    "REST": "update{type}(@PathVariable {pkFieldType} {lowerPkFieldName}, @RequestBody {type} {typeFieldName})",
-                    "MVC": "save{type}({type} {typeFieldName}, Model model)"
+                    "REST": {
+                        "noAuth": "update{type}(@PathVariable {pkFieldType} {lowerPkFieldName}, @RequestBody {type} {typeFieldName})",
+                        "withAuth": "update{type}(@PathVariable {pkFieldType} {lowerPkFieldName}, @RequestBody {type} {typeFieldName}, HttpServletRequest request)"
+                    },
+                    "MVC": {
+                        "noAuth": "save{type}({type} {typeFieldName}, Model model)",
+                        "withAuth": "save{type}({type} {typeFieldName}, Model model)"
+                    }
                 },
                 ".net": {
-                    "REST": "Update{type}({pkFieldType} {lowerPkFieldName}, {type} {typeFieldName})",
-                    "MVC": "Update({type} {typeFieldName})"
+                    "REST": {
+                        "noAuth": "Update{type}({pkFieldType} {lowerPkFieldName}, {type} {typeFieldName})",
+                        "withAuth": "Update{type}({pkFieldType} {lowerPkFieldName}, {type} {typeFieldName})" 
+                    },
+                    "MVC": {
+                        "noAuth": "Update({type} {typeFieldName})",
+                        "withAuth": "Update({type} {typeFieldName})"
+                    }
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "try{\n if ({lowerPkFieldName} != {typeFieldName}.get{upperPkFieldName}()) {\n return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);\n }\n Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({dbServiceFieldName}.save({typeFieldName}), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n{FKSelectOptions}model.addAttribute(\"errorMessage\", e.getMessage());\nmodel.addAttribute(\"pageTitle\", \"Update {typeFieldName}\");\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nreturn \"{typeFieldName}/{typeFieldName}_form\";\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
+                    "REST": {
+                        "noAuth": "try{\n if ({lowerPkFieldName} != {typeFieldName}.get{upperPkFieldName}()) {\n return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);\n }\n Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({dbServiceFieldName}.save({typeFieldName}), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                        "withAuth": "try{\n JWTToken.checkBearer(request);\n if ({lowerPkFieldName} != {typeFieldName}.get{upperPkFieldName}()) {\n return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);\n }\n Optional<{type}> {typeFieldName}Data = {dbServiceFieldName}.findById({lowerPkFieldName});\n if ({typeFieldName}Data.isPresent()) {\n return new ResponseEntity<>({dbServiceFieldName}.save({typeFieldName}), HttpStatus.OK);\n }\n else {\n return new ResponseEntity<>(HttpStatus.NOT_FOUND);\n }\n }\n catch(NotAuthorizedException e) {\n return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);\n }\n catch (Exception e) {\n return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);\n }"
+                    },
+                    "MVC": {
+                        "noAuth": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n{FKSelectOptions}model.addAttribute(\"errorMessage\", e.getMessage());\nmodel.addAttribute(\"pageTitle\", \"Update {typeFieldName}\");\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nreturn \"{typeFieldName}/{typeFieldName}_form\";\n}\n\nreturn \"redirect:/{typeFieldName}s\";",
+                        "withAuth": "try {\n    {dbServiceFieldName}.save({typeFieldName});\n}\n catch (Exception e) {\n{FKSelectOptions}model.addAttribute(\"errorMessage\", e.getMessage());\nmodel.addAttribute(\"pageTitle\", \"Update {typeFieldName}\");\nmodel.addAttribute(\"{typeFieldName}\", {typeFieldName});\nreturn \"{typeFieldName}/{typeFieldName}_form\";\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
+                    }
                 },
                 ".net": {
-                    "REST": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n{FKEntityStateParameters}_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
-                    "MVC":"try\n {\n {FKEntityStateParameters}_{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(Exception e)\n{\n{FKSelectOptions}ViewData[\"ErrorMessage\"] = e.InnerException.Message;\nreturn View(\"{type}Form\", {typeFieldName});\n}\nreturn RedirectToAction(nameof(Index));\n;"
+                    "REST": {
+                        "noAuth": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n{FKEntityStateParameters}_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();",
+                        "withAuth": "if ({lowerPkFieldName} != {typeFieldName}.{pkFieldName})\n{\nreturn BadRequest();\n}\n\n{FKEntityStateParameters}_{dbServiceFieldName}.Entry({typeFieldName}).State = EntityState.Modified;\n\ntry\n{\nawait _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(DbUpdateConcurrencyException)\n{\nthrow;\n}\n\nreturn NoContent();"
+                    },
+                    "MVC": {
+                        "noAuth": "try\n {\n {FKEntityStateParameters}_{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(Exception e)\n{\n{FKSelectOptions}ViewData[\"ErrorMessage\"] = e.InnerException.Message;\nreturn View(\"{type}Form\", {typeFieldName});\n}\nreturn RedirectToAction(nameof(Index));\n;",
+                        "withAuth": "try\n {\n {FKEntityStateParameters}_{dbServiceFieldName}.Update({typeFieldName});\n await _{dbServiceFieldName}.SaveChangesAsync();\n}\ncatch(Exception e)\n{\n{FKSelectOptions}ViewData[\"ErrorMessage\"] = e.InnerException.Message;\nreturn View(\"{type}Form\", {typeFieldName});\n}\nreturn RedirectToAction(nameof(Index));\n;"
+                    }
                 }
             }
         },
@@ -295,22 +426,46 @@
             },
             "declaration": {
                 "spring": {
-                    "REST": "delete{type}(@PathVariable {pkFieldType} {lowerPkFieldName})",
-                    "MVC": "delete{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)"
+                    "REST": {
+                        "noAuth": "delete{type}(@PathVariable {pkFieldType} {lowerPkFieldName})",
+                        "withAuth": "delete{type}(@PathVariable {pkFieldType} {lowerPkFieldName}, HttpServletRequest request)"
+                    },
+                    "MVC": {
+                        "noAuth": "delete{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)",
+                        "withAuth": "delete{type}(@PathVariable(\"{lowerPkFieldName}\") {pkFieldType} {lowerPkFieldName}, Model model, RedirectAttributes redirectAttributes)"
+                    }
                 },
                 ".net": {
-                    "REST": "Delete{type}({pkFieldType} {lowerPkFieldName})",
-                    "MVC": "Delete({pkFieldType}? id)"
+                    "REST": {
+                        "noAuth": "Delete{type}({pkFieldType} {lowerPkFieldName})",
+                        "withAuth": "Delete{type}({pkFieldType} {lowerPkFieldName})"
+                    },
+                    "MVC": {
+                        "noAuth": "Delete({pkFieldType}? id)",
+                        "withAuth": "Delete({pkFieldType}? id)"
+                    }
                 }
             },
             "content": {
                 "spring": {
-                    "REST": "try {\n {dbServiceFieldName}.deleteById({lowerPkFieldName});\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n catch(Exception e) {\n return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);\n }",
-                    "MVC": "try {\n    {dbServiceFieldName}.deleteById({lowerPkFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
+                    "REST": {
+                        "noAuth": "try {\n {dbServiceFieldName}.deleteById({lowerPkFieldName});\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n catch(Exception e) {\n return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);\n }",
+                        "withAuth": "try {\n JWTToken.checkBearer(request);\n {dbServiceFieldName}.deleteById({lowerPkFieldName});\n return new ResponseEntity<>(HttpStatus.NO_CONTENT);\n }\n catch(NotAuthorizedException e) {\n return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);\n }\n catch(Exception e) {\n return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);\n }"
+                    },
+                    "MVC": {
+                        "noAuth": "try {\n    {dbServiceFieldName}.deleteById({lowerPkFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";",
+                        "withAuth": "try {\n    {dbServiceFieldName}.deleteById({lowerPkFieldName});\n}\n catch (Exception e) {\n    e.printStackTrace();\n}\n\nreturn \"redirect:/{typeFieldName}s\";"
+                    }
                 },
                 ".net": {
-                    "REST": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn NoContent();",
-                    "MVC":"if (id == null)\n{\nreturn NotFound();\n}\n\nvar {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync(id);\n\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn RedirectToAction(nameof(Index));"
+                    "REST": {
+                        "noAuth": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn NoContent();",
+                        "withAuth": "var {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync({lowerPkFieldName});\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn NoContent();"
+                    },
+                    "MVC": {
+                        "noAuth": "if (id == null)\n{\nreturn NotFound();\n}\n\nvar {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync(id);\n\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn RedirectToAction(nameof(Index));",
+                        "withAuth": "if (id == null)\n{\nreturn NotFound();\n}\n\nvar {typeFieldName} = await _{dbServiceFieldName}.{type}s.FindAsync(id);\n\nif ({typeFieldName} == null)\n{\nreturn NotFound();\n}\n\n_{dbServiceFieldName}.{type}s.Remove({typeFieldName});\nawait _{dbServiceFieldName}.SaveChangesAsync();\n\nreturn RedirectToAction(nameof(Index));"
+                    }
                 }
             }
         }

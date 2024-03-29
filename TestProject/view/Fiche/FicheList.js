@@ -1,36 +1,45 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function #className#List() {
+export default function FicheList() {
   const navigate = useNavigate();
-  const [#typeFieldName#s, set#className#s] = useState([]);
+  const [fiches, setFiches] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPage, setTotalPage] = useState(0);
 
-  document.title = "#className#s";
+  document.title = "Fiches";
   document.body.style.backgroundColor = "#161616";
 
-  // fetching #typeFieldName#s data
-  const API_BASE_URL = "#apiUrl#";
+  // fetching fiches data
+  const API_BASE_URL = "http://localhost:8080";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5"#Authorization#).then((response) => {
+    axios.get(API_BASE_URL + "/fiches?page=" + currentPage + "&size=5", {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}}).then((response) => {
       if (totalPage === 0) {
         setTotalPage(response.data.totalPages);
       }
 
-      set#className#s(response.data.content);
-    }).catch((error) => {#ErrorCatching#
+      setFiches(response.data.content);
+    }).catch((error) => {
+      if (error.response.status === 401) {
+        localStorage.removeItem("apktoken");
+        navigate('/login');
+      }
     });
   }, [currentPage]);
 
   // delete action
-  const delete#className# = (#lowerPkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName##Authorization#).then((response) => {
-        const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
-        set#className#s(new#className#sList);
-    }).catch((error) => {#ErrorCatching#
+  const deleteFiche = (idFiche) => {
+    axios.delete(API_BASE_URL + "/fiches/" + idFiche, {headers: {"Authorization": "Bearer " + localStorage.getItem("apktoken")}}).then((response) => {
+        const newFichesList = fiches.filter(fiche => fiche.idFiche != idFiche)
+        setFiches(newFichesList);
+    }).catch((error) => {
+      if (error.response.status === 401) {
+        localStorage.removeItem("apktoken");
+        navigate('/login');
+      }
     })
   }
 
@@ -42,8 +51,22 @@ export default function #className#List() {
   }
 
   const rows = [];
-  #typeFieldName#s.forEach((#typeFieldName#) => {
-    rows.push(#tableBody#
+  fiches.forEach((fiche) => {
+    rows.push(
+      <tr key={fiche.idFiche}>
+        <td>{fiche.idFiche}</td>
+        <td>{fiche.name}</td>
+        <td>{fiche.firstname}</td>
+        <td>{fiche.address}</td>
+        <td>{fiche.mail}</td>
+        <td>{fiche.etat}</td>
+        <td>{fiche.salaire}</td>
+        <td>{fiche.admin}</td>
+        <td>
+          <a type="button" onClick={() => navigate("/fiches/" + fiche.idFiche)}><i className="fas fa-edit mx-3"></i></a>
+          <a type="button" onClick={() => deleteFiche(fiche.idFiche)}><i className="fas text-danger fa-trash mx-3"></i></a>
+        </td>
+      </tr>
     );
   });
 
@@ -76,17 +99,26 @@ export default function #className#List() {
       </nav>
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
-          <h5 className="text-white">#description#</h5>
+          <h5 className="text-white">Liste des fiches</h5>
           <button
             className="btn btn-outline-secondary mt-3 px-4"
-            onClick={() => navigate("#createNewLink#")}
+            onClick={() => navigate("/fiches/new")}
           >
-            <i className="fas fa-plus me-3"></i>#createNewDescription#
+            <i className="fas fa-plus me-3"></i>Nouvelle fiche
           </button>
           <div className="mt-4">
             <table className="table table-dark table-hover">
               <thead>
-                <tr>#tableHead#
+                <tr>
+						<th>Id Fiche </th>
+						<th>Name </th>
+						<th>Firstname </th>
+						<th>Address </th>
+						<th>Mail </th>
+						<th>Etat </th>
+						<th>Salaire </th>
+						<th>Admin </th>
+						<th></th>
                 </tr>
               </thead>
               <tbody>
