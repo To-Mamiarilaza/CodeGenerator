@@ -2,14 +2,12 @@ package codegenerator.view;
 
 import java.util.List;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import codegenerator.CodeGenerator;
 import codegenerator.database.Column;
 import codegenerator.database.Table;
 import codegenerator.model.Model;
-import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
 import codegenerator.util.WordFormatter;
 

@@ -56,6 +56,10 @@
             "JAVA": "String",
             "C#": "string"
         },
+        "text": {
+            "JAVA": "String",
+            "C#": "string"
+        },
         "date": {
             "JAVA": "Date",
             "C#": "DateTime"

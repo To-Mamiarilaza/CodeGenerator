@@ -280,6 +280,7 @@
     "float8": "text",
     "numeric": "text",
     "varchar": "text",
+    "text": "text",
     "date": "date",
     "time": "time",
     "datetime": "datetime-local",

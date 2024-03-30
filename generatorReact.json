@@ -5,7 +5,7 @@
     "outputPath": "./TestProject",
     "database": {
         "type": "postgresql",
-        "database": "fiche_employe",
+        "database": "biblio",
         "host": "localhost",
         "username": "postgres",
         "password": "postgres"

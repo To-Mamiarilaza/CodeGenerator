@@ -281,6 +281,7 @@ public class Model {
         String imports = "";
         for (Column column : getTable().getColumns()) {
             String importDeclaration = getModelData().get("imports").getAsJsonObject().get(getLanguage()).getAsString();
+            System.out.println("COLONNE TYPE : " + column.getType());
             String type = getModelData().get("typeMapping").getAsJsonObject().get(column.getType()).getAsJsonObject()
                     .get(getLanguage()).getAsString();
             JsonElement typeImport = getModelData().get("typeImport").getAsJsonObject().get(getLanguage())

@@ -4,14 +4,9 @@
  */
 package codegenerator;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -25,7 +20,6 @@ import codegenerator.project.generator.DotnetBaseGenerator;
 import codegenerator.project.generator.ProjectBaseGenerator;
 import codegenerator.project.generator.SpringBaseGenerator;
 import codegenerator.util.AuthentificationUtil;
-import codegenerator.util.CLIUtil;
 import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
 import codegenerator.util.JsonUtil;
@@ -536,6 +530,7 @@ public class CodeGenerator {
 
         String classOutputPath = outputPath;
         String viewOutputPath = outputPath;
+
         if (generateProjectBase) {
             classOutputPath = Model.getModelData().get("classOutputPath").getAsJsonObject().get(framework).getAsString();
             viewOutputPath = Model.getModelData().get("viewOutputPath").getAsJsonObject().get(framework).getAsString();
@@ -563,7 +558,7 @@ public class CodeGenerator {
                 String userModelPackage = modelArray.get(0).getAsJsonObject().get("package").getAsString();
                 String controllerPackage = controllerArray.get(0).getAsJsonObject().get("package").getAsString();
                 String repositoryPackage = config.get("controller").getAsJsonObject().get("dbServicePackage").getAsString();
-                AuthentificationUtil.generateAuthRequiredFile(outputPath, controllerPackage, userModelPackage, repositoryPackage, framework);
+                AuthentificationUtil.generateAuthRequiredFile(classOutputPath, controllerPackage, userModelPackage, repositoryPackage, framework);
             }
         }
 
