@@ -12,6 +12,78 @@
       "razor": "mvc/create.template",
       "react": "react/create.template"
     },
+    "mappingView": {
+      "mine": {
+        "template": "",
+        "filename": "",
+        "routing": "",
+        "import": ""
+      },
+      "thymeleaf": {
+        "template": "",
+        "filename": "",
+        "routing": "",
+        "import": ""
+      },
+      "razor": {
+        "template": "",
+        "filename": "",
+        "routing": "",
+        "import": ""
+      },
+      "react": {
+        "template": "react/app.js.template",
+        "pageName": "App.js",
+        "routing": "\n        <Route path=\"{urlMapping}\" exact Component={{pageName}} />",
+        "import": "import {pageName} from \"./pages/{pageDirectory}\";\n"
+      }
+    },
+    "otherView": {
+      "mine": {
+        "404Error": {
+          "template": "",
+          "pageName": ""
+        },
+        "home": {
+          "template": "",
+          "pageName": "",
+          "entityList": ""
+        }
+      },
+      "thymeleaf": {
+        "404Error": {
+          "template": "",
+          "pageName": ""
+        },
+        "home": {
+          "template": "",
+          "pageName": "",
+          "entityList": ""
+        }
+      },
+      "razor": {
+        "404Error": {
+          "template": "",
+          "pageName": ""
+        },
+        "home": {
+          "template": "",
+          "pageName": "",
+          "entityList": ""
+        }
+      },
+      "react": {
+        "404Error": {
+          "template": "react/404error.template",
+          "pageName": "Error404.js"
+        },
+        "home": {
+          "template": "react/home.template",
+          "pageName": "Home.js",
+          "entityList": "\n\t\t\t\t\t\t\t<div className=\"col-md-4 mb-3 text-info\"><a href=\"./{entityUrl}\" className=\"text-decoration-none\"><i class=\"far fa-file-alt me-3\"></i>{entityName}</a></div>"
+        }
+      }
+    },
     "fileExtension": {
       "mine": ".jsp",
       "thymeleaf": ".html",
@@ -87,7 +159,7 @@
         "mine": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
         "thymeleaf": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" id=\"{fieldName}\" th:field=\"*{{fieldName}}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
         "razor": "\n\t\t\t\t\t<div class=\"form-check\">\n\t\t\t\t\t\t<input class=\"form-check-input\" type=\"checkbox\" asp-for=\"{fieldName}\"/>\n\t\t\t\t\t\t<label class=\"form-check-label text-white\" asp-for=\"{fieldName}\" class=\"form-label text-white\">{upperFieldName}</label>\n\t\t\t\t\t</div>",
-        "react": "\n              <div class=\"mb-3\">\n                <input class=\"form-check-input\" type=\"checkbox\" id=\"{lowerFieldName}\" value={{lowerFieldName}} onChange={(e) => set{upperFieldName}(e.target.value)} />\n                <label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n              </div>"
+        "react": "\n              <div class=\"mb-3\">\n                <input class=\"form-check-input me-3\" type=\"checkbox\" id=\"{lowerFieldName}\" checked={{lowerFieldName}} onChange={(e) => set{upperFieldName}({lowerFieldName} ? false : true)} />\n                <label class=\"form-check-label text-white\" for=\"{fieldName}\">{upperFieldName}</label>\n              </div>"
       }
     },
     "formSelect": {
@@ -174,7 +246,7 @@
       "thymeleaf": "",
       "razor": "",
       "mine": "",
-      "react": "\n    axios.get(API_BASE_URL + \"/{fieldName}s\")\n    .then((response) => {\n      set{upperFieldName}s(response.data)\n      if(response.data.length > 0) {\n        set{upperPkFieldName}(response.data[0].{pkFieldName})\n      }\n    })\n    .catch((error) => {\n      alert(error)\n    })\n"
+      "react": "\n    axios.get(API_BASE_URL + \"/{fieldName}s\"#Authorization#)\n    .then((response) => {\n      set{upperFieldName}s(response.data.content)\n      if(response.data.content.length > 0) {\n        set{upperPkFieldName}(response.data.content[0].{pkFieldName})\n      }\n    })\n    .catch((error) => {#ErrorCatching#\n    })\n"
     },
     "fieldValueSetting": {
       "thymeleaf": "",
@@ -208,10 +280,55 @@
     "float8": "text",
     "numeric": "text",
     "varchar": "text",
+    "text": "text",
     "date": "date",
     "time": "time",
     "datetime": "datetime-local",
     "timestamp": "date-time-local",
     "bool": "checkbox"
+  },
+  "authentification": {
+    "thymeleaf": {
+      "loginPageTemplate": "",
+      "loginPageName": "",
+      "signupPageTemplate": "",
+      "signupPageName": ""
+    },
+    "razor": {
+      "loginPageTemplate": "",
+      "loginPageName": "",
+      "signupPageTemplate": "",
+      "signupPageName": ""
+    },
+    "mine": {
+      "loginPageTemplate": "",
+      "loginPageName": "",
+      "signupPageTemplate": "",
+      "signupPageName": ""
+    },
+    "react": {
+      "loginPageTemplate": "react.login.page.template",
+      "loginPageName": "Login.js",
+      "signupPageTemplate": "react.signup.page.template",
+      "signupPageName": "Signup.js"
+    }
+  },
+  "authChecking": {
+    "thymeleaf": {
+      "authCheck": "",
+      "errorCatch": ""
+    },
+    "razor": {
+      "authCheck": "",
+      "errorCatch": ""
+    },
+    "mine": {
+      "authCheck": "",
+      "errorCatch": ""
+    },
+    "react": {
+      "authCheck": ", {headers: {\"Authorization\": \"Bearer \" + localStorage.getItem(\"apktoken\")}}",
+      "errorCatch": "\n#TAB#if (error.response.status === 401) {\n#TAB#  localStorage.removeItem(\"apktoken\");\n#TAB#  navigate('/login');\n#TAB#}"
+    }
   }
 }

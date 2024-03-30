@@ -2,6 +2,7 @@ package codegenerator.controller;
 
 import java.util.List;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -26,6 +27,7 @@ public class Controller {
     String outputPath;
     String dbServicePackage;
     String templateContent;
+    Boolean withAuth;
     DBService dbService;
     CodeGenerator codeGenerator;
 
@@ -126,10 +128,18 @@ public class Controller {
         this.dbService = dbService;
     }
 
+    public Boolean getWithAuth() {
+        return withAuth;
+    }
+
+    public void setWithAuth(Boolean withAuth) {
+        this.withAuth = withAuth;
+    }
+
     /// Constructor
     public Controller(Model model, String language, String framework, String controllerType, String DAO,
             String packageName, String requestMapping, String outputPath, String dbServicePackage,
-            CodeGenerator codeGenerator) {
+            CodeGenerator codeGenerator, Boolean withAuth) {
         this.model = model;
         this.language = language;
         this.framework = framework;
@@ -138,6 +148,7 @@ public class Controller {
         this.packageName = packageName;
         this.dbServicePackage = dbServicePackage;
         this.codeGenerator = codeGenerator;
+        this.withAuth = withAuth;
 
         if (requestMapping.equals("DEFAULT")) {
             requestMapping = WordFormatter.toCamelCase(getModel().getTable().getName());
@@ -169,6 +180,15 @@ public class Controller {
             String customImportDeclaration = importDeclaration;
             for (JsonElement controllerImport : controllerImportsElement.getAsJsonArray()) {
                 imports += customImportDeclaration.replace("{type}", controllerImport.getAsString()) + "\n";
+            }
+
+            if (getWithAuth()) {
+                JsonArray authRequiredImports = getControllerData().get("authRequiredImport").getAsJsonObject()
+                    .get(getFramework()).getAsJsonObject().get(getControllerType()).getAsJsonArray();
+                
+                for (JsonElement authImport : authRequiredImports) {
+                    imports += customImportDeclaration.replace("{type}", authImport.getAsString()) + "\n";
+                }
             }
         }
 
@@ -216,6 +236,7 @@ public class Controller {
         // DAO imports requirements
         // ...
 
+        imports = imports.replace("#ExceptionPackage#", getPackageName().replace("controller", "exception"));
         setTemplateContent(getTemplateContent().replace("#imports#", imports));
     }
 
@@ -355,12 +376,14 @@ public class Controller {
     }
 
     public void setGetAllDeclaration() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement getAllDeclaration = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("getAll").getAsJsonObject()
                 .get("declaration").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         setTemplateContent(getTemplateContent().replace("#getAllDeclaration#",
                 getAllDeclaration.getAsString().replace("{type}", getModel().getClassName())));
@@ -429,12 +452,14 @@ public class Controller {
     }
 
     public void setGetAllContent() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement getAllContent = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("getAll").getAsJsonObject()
                 .get("content").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         // Specially for .net but don't disturb other
         String fkIncludes = getFkIncludesDeclaration();
@@ -475,12 +500,14 @@ public class Controller {
     }
 
     public void setGetByIdDeclaration() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement getByIdDeclaration = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("getById").getAsJsonObject()
                 .get("declaration").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         setTemplateContent(getTemplateContent().replace("#getByIdDeclaration#", getByIdDeclaration.getAsString()
                 .replace("{type}", getModel().getClassName())
@@ -490,12 +517,14 @@ public class Controller {
     }
 
     public void setGetByIdContent() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement getByIdContent = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("getById").getAsJsonObject()
                 .get("content").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         // Specially for .net but don't disturb other
         String fkIncludes = getFkIncludesDeclaration();
@@ -541,12 +570,14 @@ public class Controller {
     }
 
     public void setCreateDeclaration() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement createDeclaration = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("create").getAsJsonObject()
                 .get("declaration").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         setTemplateContent(getTemplateContent().replace("#createDeclaration#", createDeclaration.getAsString()
                 .replace("{type}", getModel().getClassName())
@@ -555,12 +586,14 @@ public class Controller {
     }
 
     public void setCreateContent() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement createContent = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("create").getAsJsonObject()
                 .get("content").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         // Set foreign key entity state if needed
         String fkEntityStateParameters = getFkEntityStateParameters();
@@ -608,12 +641,14 @@ public class Controller {
     }
 
     public void setUpdateDeclaration() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement updateDeclaration = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("update").getAsJsonObject()
                 .get("declaration").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         setTemplateContent(getTemplateContent().replace("#updateDeclaration#", updateDeclaration.getAsString()
                 .replace("{pkFieldType}", getModel().getPrimaryKeyFieldType())
@@ -624,12 +659,14 @@ public class Controller {
     }
 
     public void setUpdateContent() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement updateContent = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("update").getAsJsonObject()
                 .get("content").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         // Set foreign key entity state if needed
         String fkEntityStateParameters = getFkEntityStateParameters();
@@ -678,12 +715,14 @@ public class Controller {
     }
 
     public void setDeleteDeclaration() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement deleteDeclaration = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("delete").getAsJsonObject()
                 .get("declaration").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         setTemplateContent(getTemplateContent().replace("#deleteDeclaration#", deleteDeclaration.getAsString()
                 .replace("{pkFieldType}", getModel().getPrimaryKeyFieldType())
@@ -692,12 +731,14 @@ public class Controller {
     }
 
     public void setDeleteContent() throws Exception {
+        String authState = withAuth ? "withAuth" : "noAuth";
         JsonElement deleteContent = getControllerData()
                 .get("CRUDMethods").getAsJsonObject()
                 .get("delete").getAsJsonObject()
                 .get("content").getAsJsonObject()
                 .get(getFramework()).getAsJsonObject()
-                .get(getControllerType());
+                .get(getControllerType()).getAsJsonObject()
+                .get(authState);
 
         setTemplateContent(getTemplateContent().replace("#deleteContent#", deleteContent.getAsString())
                 .replace("{typeFieldName}", getModel().getFieldName())

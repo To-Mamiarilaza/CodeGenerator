@@ -15,24 +15,22 @@ export default function #className#List() {
   const API_BASE_URL = "#apiUrl#";
 
   useEffect(() => {
-    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5").then((response) => {
+    axios.get(API_BASE_URL + "/#typeFieldNameUrl#s?page=" + currentPage + "&size=5"#Authorization#).then((response) => {
       if (totalPage === 0) {
         setTotalPage(response.data.totalPages);
       }
 
       set#className#s(response.data.content);
-    }).catch((error) => {
-        alert(error)
+    }).catch((error) => {#ErrorCatching#
     });
   }, [currentPage]);
 
   // delete action
   const delete#className# = (#lowerPkFieldName#) => {
-    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName#).then((response) => {
+    axios.delete(API_BASE_URL + "/#typeFieldNameUrl#s/" + #lowerPkFieldName##Authorization#).then((response) => {
         const new#className#sList = #typeFieldName#s.filter(#typeFieldName# => #typeFieldName#.#lowerPkFieldName# != #lowerPkFieldName#)
         set#className#s(new#className#sList);
-    }).catch((error) => {
-        alert(error)
+    }).catch((error) => {#ErrorCatching#
     })
   }
 
@@ -72,10 +70,13 @@ export default function #className#List() {
       <nav className="navbar navbar-dark bg-dark">
         <div className="container-fluid">
           <span className="navbar-brand mb-0 h1 ms-5">
-            <i className="fas fa-kiwi-bird me-4"></i>Lazy coding
+            <a href="/home" className="text-decoration-none text-white">
+              <i className="fas fa-kiwi-bird me-4"></i>Lazy coding
+            </a>
           </span>
         </div>
       </nav>
+      
       <div className="container row mt-4 mx-auto" data-bs-theme="dark">
         <div className="col-md-12">
           <h5 className="text-white">#description#</h5>

@@ -1,10 +1,11 @@
 {
     "projectName": "React",
     "withBaseProject": false,
-    "outputPath": "./ReactView",
+    "withAuthentification": true,
+    "outputPath": "./TestProject",
     "database": {
         "type": "postgresql",
-        "database": "fiche_employe",
+        "database": "biblio",
         "host": "localhost",
         "username": "postgres",
         "password": "postgres"
@@ -13,12 +14,12 @@
     "DAO": "JPA",
     "framework": "spring",
     "model": {
-        "tables": [{"name": "*", "package": "thymeleaf.model"}]
+        "tables": [{"name": "*", "package": "react.model"}]
     },
     "controller": {
         "type": "REST",
-        "dbServicePackage": "thymeleaf.repository",
-        "tables": [{"name": "*", "package": "thymeleaf.controller", "requestMapping": "DEFAULT"}]
+        "dbServicePackage": "react.repository",
+        "tables": [{"name": "*", "package": "react.controller", "requestMapping": "DEFAULT"}]
     },
     "view": {
         "choice": "react",

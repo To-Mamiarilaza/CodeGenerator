@@ -4,13 +4,9 @@
  */
 package codegenerator;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -23,10 +19,11 @@ import codegenerator.model.*;
 import codegenerator.project.generator.DotnetBaseGenerator;
 import codegenerator.project.generator.ProjectBaseGenerator;
 import codegenerator.project.generator.SpringBaseGenerator;
-import codegenerator.util.CLIUtil;
+import codegenerator.util.AuthentificationUtil;
 import codegenerator.util.CodeFormatter;
 import codegenerator.util.FileUtil;
 import codegenerator.util.JsonUtil;
+import codegenerator.util.WordFormatter;
 import codegenerator.view.View;;
 
 /**
@@ -92,6 +89,7 @@ public class CodeGenerator {
         try {
             databaseInformation.fetchInformations();
             setDatabaseInformation(databaseInformation);
+            System.out.println("\n--------------------");
             System.out.println("CONNECTION EFFECTUE !");
 
         } catch (Exception e) {
@@ -175,7 +173,93 @@ public class CodeGenerator {
         }
     }
 
-    public void generateModel(String language, String DAO, String outputPath, JsonObject modelConfig) throws Exception {
+    public void removeUserTableFromTableList(List<Table> targetTables) {
+        Table userTable = null;
+        for(Table table : targetTables) {
+            if (table.getName().equals("utilisateur")) userTable = table;
+        }
+        targetTables.remove(userTable);
+    }
+
+    public void initOtherNeededView(String outputPath, String viewPackage, String viewChoice, JsonObject viewData, List<View> generatedViews) throws IOException {
+        JsonObject usedData = viewData.get("page").getAsJsonObject().get("otherView").getAsJsonObject().get(viewChoice).getAsJsonObject();
+        String packagePath = viewPackage.replace(".", "/");
+
+        // Generate the home page
+        System.out.println("\nGeneration du page d'accueil ...");
+        String homePageContent = FileUtil.toStringInnerFile("/template/view/" + usedData.get("home").getAsJsonObject().get("template").getAsString());
+        String pageUrls = "";
+        String pageUrlDeclaration = usedData.get("home").getAsJsonObject().get("entityList").getAsString();
+        for (View view : generatedViews) {
+            pageUrls += pageUrlDeclaration.replace("{entityUrl}", view.getModel().getFieldName() + "s").replace("{entityName}", view.getModel().getClassName());
+        }
+        homePageContent = homePageContent.replace("#pageUrl#", pageUrls);
+        FileUtil.createFileWithContent(homePageContent, WordFormatter.preparePath(outputPath) + packagePath,
+        usedData.get("home").getAsJsonObject().get("pageName").getAsString());
+        
+        
+        // Generate the 404 error page
+        System.out.println("Generation du page 404 error ...");
+        String errorPageViewContent = FileUtil.toStringInnerFile("/template/view/" + usedData.get("404Error").getAsJsonObject().get("template").getAsString());
+        FileUtil.createFileWithContent(errorPageViewContent, WordFormatter.preparePath(outputPath) + packagePath,
+        usedData.get("404Error").getAsJsonObject().get("pageName").getAsString());
+        
+    }
+    
+    public void initMappingView(String outputPath, String viewPackage, String viewChoice, JsonObject viewData, List<View> generatedViews, Boolean withAuth) throws IOException {
+        // Generate the mapping view
+        JsonObject usedData = viewData.get("page").getAsJsonObject().get("mappingView").getAsJsonObject().get(viewChoice).getAsJsonObject();
+        String packagePath = viewPackage.replace(".", "/");
+
+        System.out.println("\nGeneration du page de mapping ...");
+        String mappingViewContent = FileUtil.toStringInnerFile("/template/view/" + usedData.get("template").getAsString());
+
+        // Resolve page importation
+        String fileExtension = viewData.get("page").getAsJsonObject().get("fileExtension").getAsJsonObject()
+                .get(viewChoice).getAsString();
+        String imports = "";
+        String importDeclaration = usedData.get("import").getAsString();
+        for (View view : generatedViews) {
+            String listPageName = view.getPageFileName("list").replace(fileExtension, "");
+            String createPageName = view.getPageFileName("create").replace(fileExtension, "");
+
+            String directory = view.getSelfPackaging();
+
+            imports += importDeclaration.replace("{pageName}", listPageName).replace("{pageDirectory}", directory + "/" + listPageName);
+            imports += importDeclaration.replace("{pageName}", createPageName).replace("{pageDirectory}", directory + "/" + createPageName);
+        }
+
+        if (withAuth) {
+            imports += importDeclaration.replace("{pageName}", "Login").replace("{pageDirectory}", "Authentification/Login");
+            imports += importDeclaration.replace("{pageName}", "Signup").replace("{pageDirectory}", "Authentification/Signup");
+        }
+
+        mappingViewContent = mappingViewContent.replace("#PageImportations#", imports);
+
+        // Resolve page routing
+        String routes = "";
+        String routeDeclaration = usedData.get("routing").getAsString();
+        for (View view : generatedViews) {
+            String listPageName = view.getPageFileName("list").replace(fileExtension, "");
+            String createPageName = view.getPageFileName("create").replace(fileExtension, "");
+
+            routes += routeDeclaration.replace("{urlMapping}", view.getModel().getFieldName() + "s").replace("{pageName}", listPageName);
+            routes += routeDeclaration.replace("{urlMapping}", view.getModel().getFieldName() + "s/new").replace("{pageName}", createPageName);
+            routes += routeDeclaration.replace("{urlMapping}", view.getModel().getFieldName() + "s/:id").replace("{pageName}", createPageName);
+        }
+
+        if (withAuth) {
+            routes += routeDeclaration.replace("{urlMapping}", "/login").replace("{pageName}", "Login");
+            routes += routeDeclaration.replace("{urlMapping}", "/signup").replace("{pageName}", "Signup");
+        }
+
+        mappingViewContent = mappingViewContent.replace("#PageMappings#", routes);
+        
+        FileUtil.createFileWithContent(mappingViewContent, WordFormatter.preparePath(outputPath) + packagePath,
+        usedData.get("pageName").getAsString());
+    }
+
+    public void generateModel(String language, String DAO, String outputPath, JsonObject modelConfig, boolean withAuth) throws Exception {
         // check if the given language exist
         checkLanguageExistence(language);
 
@@ -191,6 +275,7 @@ public class CodeGenerator {
             if (tableParameter.get("name").getAsString().equals("*")) {
                 String packageName = tableParameter.get("package").getAsString();
                 List<Table> targetTables = getDatabaseInformation().getTables();
+
                 for (Table table : targetTables) {
                     System.out.print("- " + table.getName() + " : ");
 
@@ -270,7 +355,7 @@ public class CodeGenerator {
     }
 
     public void generateController(String language, String framework, String DAO, String outputPath,
-            JsonObject controllerConfig) throws Exception {
+            JsonObject controllerConfig, boolean withAuth) throws Exception {
         // check if the given framework exist and supported
         checkFrameworkExistence(framework);
         checkFrameworkCompatibility(language, framework);
@@ -292,12 +377,15 @@ public class CodeGenerator {
                 String requestMapping = controllerParameter.get("requestMapping").getAsString();
 
                 List<Table> targetTables = getDatabaseInformation().getTables();
+
+                if (withAuth) removeUserTableFromTableList(targetTables);
+
                 for (Table table : targetTables) {
                     System.out.print("- " + table.getName() + " : ");
                     Model model = getModelWithName(table.getName());
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
-                            requestMapping, outputPath, dbServicePackage, this);
+                            requestMapping, outputPath, dbServicePackage, this, withAuth);
 
                     // if we need global db service
                     controller.setDbService(globalDbService);
@@ -318,7 +406,7 @@ public class CodeGenerator {
                     Model model = getModelWithName(targetTable.getName());
 
                     Controller controller = new Controller(model, language, framework, type, DAO, packageName,
-                            requestMapping, outputPath, dbServicePackage, this);
+                            requestMapping, outputPath, dbServicePackage, this, withAuth);
 
                     // if we need global db service
                     controller.setDbService(globalDbService);
@@ -334,12 +422,13 @@ public class CodeGenerator {
         }
     }
 
-    public void generateView(JsonObject viewConfig, String outputPath, JsonObject data) throws Exception {
+    public void generateView(JsonObject viewConfig, String outputPath, JsonObject data, boolean withAuth) throws Exception {
         String viewChoice = viewConfig.get("choice").getAsString();
         String viewPackage = viewConfig.get("package").getAsString();
         String apiUrl = viewConfig.get("apiUrl").getAsString();
 
         JsonArray tableArray = viewConfig.get("tables").getAsJsonArray();
+        List<View> generatedViews = new ArrayList<>();
 
         for (JsonElement jsonElement : tableArray) {
             JsonObject viewParameter = jsonElement.getAsJsonObject();
@@ -347,13 +436,17 @@ public class CodeGenerator {
             // if generating all tables
             if (viewParameter.get("name").getAsString().equals("*")) {
                 List<Table> targetTables = getDatabaseInformation().getTables();
+
+                if (withAuth) removeUserTableFromTableList(targetTables);
+
                 for (Table table : targetTables) {
                     System.out.print("- " + table.getName() + " : ");
                     Model model = getModelWithName(table.getName());
 
-                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this, apiUrl);
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this, apiUrl, withAuth);
                     view.loadTemplate();
                     view.generate();
+                    generatedViews.add(view);
 
                     System.out.println("OK");
                 }
@@ -365,15 +458,27 @@ public class CodeGenerator {
                 if (targetTable != null) {
                     Model model = getModelWithName(targetTable.getName());
 
-                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this, apiUrl);
+                    View view = new View(model, viewChoice, viewPackage, outputPath, data, this, apiUrl, withAuth);
                     view.loadTemplate();
                     view.generate();
+                    generatedViews.add(view);
 
                     System.out.println("OK");
                 } else {
                     System.out.println("ECHOUE");
                 }
             }
+        }
+
+        // Generate mapping page
+        initMappingView(outputPath, viewPackage, viewChoice, data, generatedViews, withAuth);
+
+        // Generate other needed page
+        initOtherNeededView(outputPath, viewPackage, viewChoice, data, generatedViews);
+
+        // Generation du vue pour le login et le signup
+        if (withAuth) {
+            AuthentificationUtil.generateAuthAdditionalView(outputPath, viewPackage, viewChoice, apiUrl, data);
         }
     }
 
@@ -398,6 +503,12 @@ public class CodeGenerator {
             DAO = DAOElement.getAsString();
         }
 
+        // Gestion de l'authentification
+        boolean withAuth = config.get("withAuthentification").getAsBoolean();
+        if (withAuth) {
+            AuthentificationUtil.initAuthentificationTable(getDatabaseInformation());
+        }
+
         // Generation du projet de base
         Boolean generateProjectBase = config.get("withBaseProject").getAsBoolean();
         if (generateProjectBase) {
@@ -419,6 +530,7 @@ public class CodeGenerator {
 
         String classOutputPath = outputPath;
         String viewOutputPath = outputPath;
+
         if (generateProjectBase) {
             classOutputPath = Model.getModelData().get("classOutputPath").getAsJsonObject().get(framework).getAsString();
             viewOutputPath = Model.getModelData().get("viewOutputPath").getAsJsonObject().get(framework).getAsString();
@@ -429,14 +541,26 @@ public class CodeGenerator {
 
         // Generation des code
         System.out.println("GENERATION CODE MODEL");
-        generateModel(language, DAO, classOutputPath, config.get("model").getAsJsonObject());
+        generateModel(language, DAO, classOutputPath, config.get("model").getAsJsonObject(), withAuth);
 
         System.out.println("\nGENERATION CODE CONTROLLER");
-        generateController(language, framework, DAO, classOutputPath, config.get("controller").getAsJsonObject());
+        generateController(language, framework, DAO, classOutputPath, config.get("controller").getAsJsonObject(), withAuth);
 
         System.out.println("\nGENERATION CODE VIEW");
         JsonObject data = JsonUtil.toJsonObject("/data/view.json", "IN");
-        generateView(config.get("view").getAsJsonObject(), viewOutputPath, data);
+        generateView(config.get("view").getAsJsonObject(), viewOutputPath, data, withAuth);
+
+        // Generate authentification required file
+        if (withAuth) {
+            JsonArray modelArray = config.get("model").getAsJsonObject().get("tables").getAsJsonArray();
+            JsonArray controllerArray = config.get("controller").getAsJsonObject().get("tables").getAsJsonArray();
+            if (modelArray.size() > 0) {
+                String userModelPackage = modelArray.get(0).getAsJsonObject().get("package").getAsString();
+                String controllerPackage = controllerArray.get(0).getAsJsonObject().get("package").getAsString();
+                String repositoryPackage = config.get("controller").getAsJsonObject().get("dbServicePackage").getAsString();
+                AuthentificationUtil.generateAuthRequiredFile(classOutputPath, controllerPackage, userModelPackage, repositoryPackage, framework);
+            }
+        }
 
     }
 

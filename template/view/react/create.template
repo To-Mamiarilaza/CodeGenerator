@@ -21,10 +21,10 @@ export default function #className#Form() {
 
     if (id !== undefined) {
       axios
-        .get(API_BASE_URL + "/#typeFieldNameUrl#s/" + id)
+        .get(API_BASE_URL + "/#typeFieldNameUrl#s/" + id#Authorization#)
         .then((response) => {#fieldValueSetting#
         })
-        .catch((error) => {
+        .catch((error) => {#ErrorCatching#
           setError(error.message);
         });
     }
@@ -40,20 +40,20 @@ export default function #className#Form() {
 
     if (id === undefined) {
       axios
-      .post(API_BASE_URL + "/#typeFieldNameUrl#s", new#className#)
+      .post(API_BASE_URL + "/#typeFieldNameUrl#s", new#className##Authorization#)
         .then((response) => {
           navigate("/#typeFieldName#s");
         })
-        .catch((error) => {
+        .catch((error) => {#ErrorCatching#
           setError(error.message);
         });
       } else {
       axios
-        .put(API_BASE_URL + "/#typeFieldNameUrl#s/" + id, new#className#)
+        .put(API_BASE_URL + "/#typeFieldNameUrl#s/" + id, new#className##Authorization#)
         .then((response) => {
           navigate("/#typeFieldName#s");
         })
-        .catch((error) => {
+        .catch((error) => {#ErrorCatching#
           setError(error.message);
         });
     }
@@ -80,10 +80,12 @@ export default function #className#Form() {
         />
       </head>
 
-      <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-          <span class="navbar-brand mb-0 h1 ms-5">
-            <i class="fas fa-kiwi-bird me-4"></i>Lazy coding
+      <nav className="navbar navbar-dark bg-dark">
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1 ms-5">
+            <a href="/home" className="text-decoration-none text-white">
+              <i className="fas fa-kiwi-bird me-4"></i>Lazy coding
+            </a>
           </span>
         </div>
       </nav>
