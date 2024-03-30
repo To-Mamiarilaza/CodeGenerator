@@ -38,6 +38,52 @@
         "import": "import {pageName} from \"./pages/{pageDirectory}\";\n"
       }
     },
+    "otherView": {
+      "mine": {
+        "404Error": {
+          "template": "",
+          "pageName": ""
+        },
+        "home": {
+          "template": "",
+          "pageName": "",
+          "entityList": ""
+        }
+      },
+      "thymeleaf": {
+        "404Error": {
+          "template": "",
+          "pageName": ""
+        },
+        "home": {
+          "template": "",
+          "pageName": "",
+          "entityList": ""
+        }
+      },
+      "razor": {
+        "404Error": {
+          "template": "",
+          "pageName": ""
+        },
+        "home": {
+          "template": "",
+          "pageName": "",
+          "entityList": ""
+        }
+      },
+      "react": {
+        "404Error": {
+          "template": "react/404error.template",
+          "pageName": "Error404.js"
+        },
+        "home": {
+          "template": "react/home.template",
+          "pageName": "Home.js",
+          "entityList": "\n\t\t\t\t\t\t\t<div className=\"col-md-4 mb-3 text-info\"><a href=\"./{entityUrl}\" className=\"text-decoration-none\"><i class=\"far fa-file-alt me-3\"></i>{entityName}</a></div>"
+        }
+      }
+    },
     "fileExtension": {
       "mine": ".jsp",
       "thymeleaf": ".html",

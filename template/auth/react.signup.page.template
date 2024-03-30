@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +10,7 @@ function Signup() {
     const [error, setError] = useState('');
 
     document.title = "Inscription";
+    document.body.style.backgroundColor = "#161616";
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -60,29 +62,41 @@ function Signup() {
                 </div>
             </nav>
 
-            <div className="login-container">
-                <h2>Inscription</h2>
-                <form onSubmit={handleSubmit}>
-                    {error !== '' && <span style={"color: red"}>{{ error }}</span>}
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        value={username}
-                        onChange={(event) => setUsername(event.target.value)}
-                        required
-                    />
-                    <br/>
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        required
-                    />
-                    <br/>
-                    <button type="submit">s'inscrire</button>
-                </form>
-                <a href='login'>se connecter</a>
+            <div className="container mt-5" data-bs-theme="dark">
+                <div class="mx-auto col-md-8 px-3 mb-4">
+                    <h2 className='text-white'>Inscription</h2>
+                    <form onSubmit={handleSubmit}>
+                        <div class="mb-3">
+                            <label for="username" class="form-label text-white">Username</label>
+                            <input
+                                type="text"
+                                className='form-control'
+                                id='username'
+                                placeholder="Username"
+                                value={username}
+                                onChange={(event) => setUsername(event.target.value)}
+                                required
+                                />
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label text-white">Password</label>
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                className='form-control'
+                                id='password'
+                                value={password}
+                                onChange={(event) => setPassword(event.target.value)}
+                                required
+                                />
+                        </div>
+                        {error !== '' && <span style={"color: red"}>{{ error }}</span>}
+                        <div className='d-flex mt-4'>
+                            <button type="submit" class="btn btn-primary px-5">S'inscrire</button>
+                            <a href='login' class="btn btn-outline-primary px-5 ms-4">Se connecter</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </>
     );

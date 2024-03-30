@@ -187,6 +187,31 @@ public class CodeGenerator {
         targetTables.remove(userTable);
     }
 
+    public void initOtherNeededView(String outputPath, String viewPackage, String viewChoice, JsonObject viewData, List<View> generatedViews) throws IOException {
+        JsonObject usedData = viewData.get("page").getAsJsonObject().get("otherView").getAsJsonObject().get(viewChoice).getAsJsonObject();
+        String packagePath = viewPackage.replace(".", "/");
+
+        // Generate the home page
+        System.out.println("\nGeneration du page d'accueil ...");
+        String homePageContent = FileUtil.toStringInnerFile("/template/view/" + usedData.get("home").getAsJsonObject().get("template").getAsString());
+        String pageUrls = "";
+        String pageUrlDeclaration = usedData.get("home").getAsJsonObject().get("entityList").getAsString();
+        for (View view : generatedViews) {
+            pageUrls += pageUrlDeclaration.replace("{entityUrl}", view.getModel().getFieldName() + "s").replace("{entityName}", view.getModel().getClassName());
+        }
+        homePageContent = homePageContent.replace("#pageUrl#", pageUrls);
+        FileUtil.createFileWithContent(homePageContent, WordFormatter.preparePath(outputPath) + packagePath,
+        usedData.get("home").getAsJsonObject().get("pageName").getAsString());
+        
+        
+        // Generate the 404 error page
+        System.out.println("Generation du page 404 error ...");
+        String errorPageViewContent = FileUtil.toStringInnerFile("/template/view/" + usedData.get("404Error").getAsJsonObject().get("template").getAsString());
+        FileUtil.createFileWithContent(errorPageViewContent, WordFormatter.preparePath(outputPath) + packagePath,
+        usedData.get("404Error").getAsJsonObject().get("pageName").getAsString());
+        
+    }
+    
     public void initMappingView(String outputPath, String viewPackage, String viewChoice, JsonObject viewData, List<View> generatedViews, Boolean withAuth) throws IOException {
         // Generate the mapping view
         JsonObject usedData = viewData.get("page").getAsJsonObject().get("mappingView").getAsJsonObject().get(viewChoice).getAsJsonObject();
@@ -453,6 +478,9 @@ public class CodeGenerator {
 
         // Generate mapping page
         initMappingView(outputPath, viewPackage, viewChoice, data, generatedViews, withAuth);
+
+        // Generate other needed page
+        initOtherNeededView(outputPath, viewPackage, viewChoice, data, generatedViews);
 
         // Generation du vue pour le login et le signup
         if (withAuth) {

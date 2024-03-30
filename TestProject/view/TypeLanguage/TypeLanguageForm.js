@@ -102,10 +102,12 @@ export default function TypeLanguageForm() {
         />
       </head>
 
-      <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
-          <span class="navbar-brand mb-0 h1 ms-5">
-            <i class="fas fa-kiwi-bird me-4"></i>Lazy coding
+      <nav className="navbar navbar-dark bg-dark">
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1 ms-5">
+            <a href="/home" className="text-decoration-none text-white">
+              <i className="fas fa-kiwi-bird me-4"></i>Lazy coding
+            </a>
           </span>
         </div>
       </nav>

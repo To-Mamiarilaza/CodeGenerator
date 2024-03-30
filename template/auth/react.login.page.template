@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -59,7 +60,7 @@ function Login() {
                 </div>
             </nav>
 
-            <div class="container mt-4" data-bs-theme="dark">
+            <div class="container mt-5" data-bs-theme="dark">
                 <div class="mx-auto col-md-8 px-3 mb-4">
                     <h2 class="text-white">Login</h2>
                     <div class="card-body">
@@ -88,11 +89,15 @@ function Login() {
                                     required
                                 />
                             </div>
-                            {error !== '' && <><span style={{color: 'red'}}>{ error }</span><br/></>}
-                            <button type="submit" class="btn btn-primary px-5">Login</button>
+                            {error !== '' && <p style={{color: 'red'}} className=''>{ error }</p>}
+                            <div className='d-flex mt-4'>
+                                <button type="submit" class="btn btn-primary px-5">Login</button>
+                                <a href='signup' class="btn btn-outline-primary px-5 ms-4">Sign up</a>
+                            </div>
                         </form>
-                        <a href='signup' class="mt-3 d-block text-center">S'inscrire</a>
-                        <button onClick={()=>localStorage.removeItem("apktoken")}>Déconnection</button>
+                        <div className='mt-4'>
+                            <a href='#' onClick={()=>localStorage.removeItem("apktoken")} className='text-danger text-decoration-none'><i class="fas fa-power-off me-3"></i> Log out</a>
+                        </div>
                     </div>
                 </div>
             </div>
